@@ -1,7 +1,8 @@
 const express = require('express');
-const routes = require('../../app');
 const router = express.Router();
 const config = require('../../config/config');
+
+const middleware = require('../middleware/middleware');
 
 const mySqlConnection = require('../connection/connection');
 const jwt = require('jsonwebtoken');
@@ -20,7 +21,7 @@ router.get('/userId/:id', (req, res) => {
 });
 
 //Actualizar datos personales
-router.post('/update', verificarToken, (req, res) => {
+router.post('/update', middleware, (req, res) => {
     const data = req.body;
     const id = req.params.id;
     const old_user = req.data;
@@ -68,7 +69,7 @@ router.post('/update', verificarToken, (req, res) => {
 
 
 //Actualizar foto de perfil
-router.post('/updatePicture', verificarToken, (req, res) => {
+router.post('/updatePicture', middleware, (req, res) => {
     const namePicture = req.body.foto;
     const old_user = req.data;
 
@@ -195,37 +196,8 @@ router.post('/login', (req, res) => {
         })
 });
 
-router.post('/test', verificarToken, (req, res) => {
+router.post('/test2', middleware, (req, res) => {
     res.json({mensaje:'Informacion secreta'});
 });
-
-
-//Middleware para validar tokens de usuarios.
-function verificarToken(req, res, next) {
-    // if (!req.headers.authorization) return res.status(401).json('No autorizado'); 
-    if (!req.headers.authorization) return res.status(401).send('Error token');
-
-    // const token = req.headers.authorization.substr(7);
-    const token = req.headers.authorization.split(' ')[1];
-    // const token = req.headers.authorization;
-    if (token !== '') {
-        try {
-            const content = jwt.verify(token, config.SECRET_PASS);
-            console.log('Content:  ',content);
-            req.data = content;
-            
-            next();
-        } catch (error) {
-            res.status(401).json({
-                error: 'Token invalido'
-            });
-        }
-
-    } else {
-        res.status(401).json({
-            error: 'Token vacio'
-        });
-    }
-}
 
 module.exports = router;
