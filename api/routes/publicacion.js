@@ -16,7 +16,8 @@ router.get('/getPubId/:idPub', middleware, (req, res) => {
     descripcion, \
     estado, \
     id_especialidad, \
-    activo \
+    activo, \
+    creado \
     from publicacion where id = ? and activo ='S'", idPub, (err, rows, fields) => {
 
         if (!err) {
@@ -37,9 +38,9 @@ router.get('/getPubId/:idPub', middleware, (req, res) => {
 });
 
 //lista de publicaciones de un usuario
-router.get('/getPubUser/:idPub', middleware, (req, res) => {
+router.get('/getPubUser/:idUsu', middleware, (req, res) => {
 
-    const idPub = parseInt(req.params.idPub);
+    const idUsu = parseInt(req.params.idUsu);
     // console.log(id);
     mySqlConnection.query("select id, \
     id_usuario_pub, \
@@ -47,8 +48,9 @@ router.get('/getPubUser/:idPub', middleware, (req, res) => {
     descripcion, \
     estado, \
     id_especialidad, \
-    activo \
-    from publicacion where id_usuario_pub = ? and activo ='S'", idPub, (err, rows, fields) => {
+    activo, \
+    creado \
+    from publicacion where id_usuario_pub = ? and activo ='S'", idUsu, (err, rows, fields) => {
 
         if (!err) {
             res.json({
@@ -66,6 +68,40 @@ router.get('/getPubUser/:idPub', middleware, (req, res) => {
         }
     });
 });
+
+
+//lista de publicaciones de un usuario
+router.get('/getPubCom/:idUsu', middleware, (req, res) => {
+
+    const idUsu = parseInt(req.params.idUsu);
+    // console.log(id);
+    mySqlConnection.query("select id, \
+    id_usuario_pub, \
+    titulo, \
+    descripcion, \
+    estado, \
+    id_especialidad, \
+    activo, \
+    creado \
+    from publicacion where id_usuario_pub <> ? and estado='P' and activo ='S'", idUsu, (err, rows, fields) => {
+
+        if (!err) {
+            res.json({
+                ok: 1,
+                mensaje: 'Publicaciones selecionadas',
+                data: rows
+            });
+        } else {
+            res.json({
+                ok: 0,
+                mensaje: 'Ha ocurrido un error',
+                data: null
+            });
+            console.log(err);
+        }
+    });
+});
+
 
 //lista detalles
 router.get('/getDetalles/:idPub', middleware, (req, res) => {
