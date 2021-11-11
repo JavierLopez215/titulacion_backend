@@ -111,6 +111,7 @@ router.post('/register', (req, res) => {
         telefono: data.telefono,
         perfil_prof: data.perfil_prof,
         correo: data.correo,
+        foto: 'profile.png',
         tipo: 2,
         activo: 'S'
     }
@@ -160,7 +161,7 @@ router.post('/login', (req, res) => {
                                 direccion, \
                                 telefono, \
                                 perfil_prof, \
-                                correo,tipo, \
+                                correo,tipo, foto, \
                                 activo FROM usuario \
                                 where correo=? \
                                 and contraseña=?",

@@ -5,8 +5,45 @@ const config = require('../../config/config');
 const mySqlConnection = require('../connection/connection');
 const middleware = require('../middleware/middleware')
 
-//Seleccionar reuniones usuario
-router.get('/getIdUsu/:idUsu', middleware, (req, res) => {
+
+//Seleccionar reuniones aceptadas del usuario
+router.get('/aceptadas/getIdUsuSol/:idUsu', middleware, (req, res) => {
+    const id = parseInt(req.params.idUsu);
+    // console.log(id);
+    mySqlConnection.query("SELECT reu.id, \
+            reu.titulo, \
+            reu.descripcion, \
+            reu.id_usuario_sol,\
+            reu.id_usuario_ace, \
+            usu_ace.nombre,\
+            usu_ace.apellido,\
+            usu_ace.foto,\
+            reu.fecha_sol, \
+            reu.fecha_ace, \
+            reu.hora, \
+            reu.estado, \
+            reu.activo From reunion reu, usuario usu_ace \
+            WHERE reu.id_usuario_ace=usu_ace.id\
+            and id_usuario_sol = ? and reu.activo='S'and reu.estado='A'", id, (err, rows, fields) => {
+        if (!err) {
+            res.json({
+                ok: 1,
+                mensaje: 'Reuniones selecionadas',
+                data: rows
+            });
+        } else {
+            res.json({
+                ok: 0,
+                mensaje: 'Ha ocurrido un error',
+                data: null
+            });
+            console.log(err);
+        }
+    });
+});
+
+//Seleccionar historial de reuniones usuario
+router.get('/historial/getIdUsuSol/:idUsu', middleware, (req, res) => {
     const id = parseInt(req.params.idUsu);
     // console.log(id);
     mySqlConnection.query("SELECT id, \
@@ -18,7 +55,7 @@ router.get('/getIdUsu/:idUsu', middleware, (req, res) => {
         fecha_ace, \
         hora, \
         estado, \
-        activo From reunion WHERE id_usuario_sol = ? and activo='S'", id, (err, rows, fields) => {
+        activo From reunion WHERE id_usuario_sol = ? and activo='S' and estado<>'A'", id, (err, rows, fields) => {
         if (!err) {
             res.json({
                 ok: 1,
@@ -82,7 +119,7 @@ router.post('/post', (req, res) => {
         hora, \
         estado, \
         activo) VALUES (?,?,?,?,?,?,?,?,?)",
-        [data.titulo, data.descripcion,data.id_usuario_sol, null, data.fecha_sol, null, data.hora, data.estado, 'S'],
+        [data.titulo, data.descripcion, data.id_usuario_sol, null, data.fecha_sol, null, data.hora, data.estado, 'S'],
         (err, result, fields) => {
             if (!err) {
                 res.json({
@@ -128,7 +165,7 @@ router.put('/aceptar/:idReu', (req, res) => {
                     mensaje: 'Ha ocurrido un error',
                     data: null
                 });
-                 console.log(err)
+                console.log(err)
             }
         }
 
@@ -157,7 +194,7 @@ router.put('/cancelar/:idReu', (req, res) => {
                     mensaje: 'Ha ocurrido un error',
                     data: null
                 });
-                 console.log(err)
+                console.log(err)
             }
         }
 
@@ -186,10 +223,10 @@ router.put('/delete/:idReu', (req, res) => {
                     mensaje: 'Ha ocurrido un error',
                     data: null
                 });
-                 console.log(err)
+                console.log(err)
             }
         });
 });
 
 
-module.exports=router;
+module.exports = router;

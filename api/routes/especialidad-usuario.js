@@ -9,9 +9,11 @@ const middleware = require('../middleware/middleware')
 router.get('/get/:idUsu', middleware, (req, res) => {
     const id = parseInt(req.params.idUsu);
     // console.log(id);
-    mySqlConnection.query("Select eu.id, eu.id_especialidad, e.nombre,e.descripcion, eu.id_usuario \
+    mySqlConnection.query("Select eu.id, \
+    eu.id_especialidad, \
+    e.nombre,e.descripcion, eu.id_usuario \
     from especialidad as e, `especialidad-usuario` as eu \
-    where eu.id_usuario = ? ", id, (err, rows, fields) => {
+    where eu.id_especialidad=e.id and eu.id_usuario = ? ", id, (err, rows, fields) => {
         if (!err) {
             res.json({
                 ok: 1,

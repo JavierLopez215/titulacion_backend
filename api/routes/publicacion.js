@@ -10,15 +10,19 @@ router.get('/getPubId/:idPub', middleware, (req, res) => {
 
     const idPub = parseInt(req.params.idPub);
     // console.log(id);
-    mySqlConnection.query("select id, \
-    id_usuario_pub, \
-    titulo, \
-    descripcion, \
-    estado, \
-    id_especialidad, \
-    activo, \
-    creado \
-    from publicacion where id = ? and activo ='S'", idPub, (err, rows, fields) => {
+    mySqlConnection.query("select pub.id, \
+    pub.id_usuario_pub, \
+    CONCAT(usu.nombre,' ',usu.apellido) as nombre,\
+    usu.foto, \
+    pub.titulo, \
+    pub.descripcion, \
+    pub.estado, \
+    pub.id_especialidad, \
+    pub.activo, \
+    pub.creado \
+    from publicacion pub, usuario usu where \
+    pub.id_usuario_pub=usu.id and \
+    pub.id = ? and pub.activo ='S'", idPub, (err, rows, fields) => {
 
         if (!err) {
             res.json({
