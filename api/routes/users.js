@@ -1,11 +1,23 @@
 const express = require('express');
 const router = express.Router();
 const config = require('../../config/config');
+const multer = require('multer');
 
 const middleware = require('../middleware/middleware');
 
 const mySqlConnection = require('../connection/connection');
 const jwt = require('jsonwebtoken');
+
+var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, __dirname+'/../files/images/profile')
+    },
+    filename: function (req, file, cb) {
+      cb(null, file.fieldname + '_' + Date.now()+"_"+file.originalname)
+    }
+  })
+   
+  var upload = multer({ storage: storage })
 
 //Seleccionar datos por id de Usuario
 router.get('/userId/:id', (req, res) => {
@@ -69,9 +81,10 @@ router.post('/update', middleware, (req, res) => {
 
 
 //Actualizar foto de perfil
-router.post('/updatePicture', middleware, (req, res) => {
-    const namePicture = req.body.foto;
+router.post('/updatePicture', [upload.single('file'), middleware], (req, res) => {
+    const namePicture = req.file.filename;
     const old_user = req.data;
+    console.log(namePicture)
 
     mySqlConnection.query("UPDATE usuario SET foto = ? where id = ?",
         [namePicture, old_user.id],

@@ -18,10 +18,12 @@ router.get('/getPubId/:idPub', middleware, (req, res) => {
     pub.descripcion, \
     pub.estado, \
     pub.id_especialidad, \
+    es.nombre as especialidad, \
     pub.activo, \
     pub.creado \
-    from publicacion pub, usuario usu where \
+    from publicacion pub, usuario usu, especialidad es where \
     pub.id_usuario_pub=usu.id and \
+    es.id=pub.id_especialidad and\
     pub.id = ? and pub.activo ='S'", idPub, (err, rows, fields) => {
 
         if (!err) {
@@ -55,6 +57,38 @@ router.get('/getPubUser/:idUsu', middleware, (req, res) => {
     activo, \
     creado \
     from publicacion where id_usuario_pub = ? and activo ='S'", idUsu, (err, rows, fields) => {
+
+        if (!err) {
+            res.json({
+                ok: 1,
+                mensaje: 'Publicaciones selecionadas',
+                data: rows
+            });
+        } else {
+            res.json({
+                ok: 0,
+                mensaje: 'Ha ocurrido un error',
+                data: null
+            });
+            console.log(err);
+        }
+    });
+});
+
+//lista de publicaciones de un usuario
+router.get('/getTopPubUser/:idUsu', middleware, (req, res) => {
+
+    const idUsu = parseInt(req.params.idUsu);
+    // console.log(id);
+    mySqlConnection.query("select id, \
+    id_usuario_pub, \
+    titulo, \
+    descripcion, \
+    estado, \
+    id_especialidad, \
+    activo, \
+    creado \
+    from publicacion where id_usuario_pub = ? and activo ='S' LIMIT 0,5", idUsu, (err, rows, fields) => {
 
         if (!err) {
             res.json({
