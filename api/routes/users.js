@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const config = require('../../config/config');
 const multer = require('multer');
+const fs = require('fs')
 
 const middleware = require('../middleware/middleware');
 
@@ -84,15 +85,24 @@ router.post('/update', middleware, (req, res) => {
 router.post('/updatePicture', [upload.single('file'), middleware], (req, res) => {
     const namePicture = req.file.filename;
     const old_user = req.data;
-    console.log(namePicture)
+    console.log()
 
     mySqlConnection.query("UPDATE usuario SET foto = ? where id = ?",
         [namePicture, old_user.id],
         (err, result,fields) => {
             if (!err) {
+
+                try {
+                    fs.unlinkSync(`api/files/images/profile/${old_user.foto}`)
+                    // console.log('File removed')
+                  } catch(err) {
+                    console.error('ha ocurrido un error')
+                  }
+
                 old_user.foto = namePicture; 
                 let user_ = JSON.stringify(old_user);
                 const token = jwt.sign(user_, config.SECRET_PASS);
+                
                 res.json({
                     ok: 1,
                     mensaje: 'Actualizado Correctamente',

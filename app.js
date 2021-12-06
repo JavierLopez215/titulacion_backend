@@ -1,5 +1,13 @@
 const express = require('express');
 const app = express();
+var files = require('path');
+var path_files = files.join(`${__dirname}/api/files/archivos`);
+var path_images = files.join(`${__dirname}/api/files/images`);
+
+app.use('/archivos', express.static(path_files));
+app.use('/images', express.static( path_images));
+
+
 // const uploads = multer({dest: './files'});
 
 // const bodyParser = require('body-parser');
