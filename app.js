@@ -47,4 +47,9 @@ app.use('/publicacion', publicacionRoute);
 
 const reunionRoute = require ('./api/routes/reunion');
 app.use('/reunion', reunionRoute);
+
+// const calificacionRoute = require ('./api/routes/calificacion');
+// app.use('/calificacion', reunionRoute);
+
+
 module.exports=app;

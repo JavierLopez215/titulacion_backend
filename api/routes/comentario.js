@@ -12,10 +12,11 @@ router.get('/getComentario/:idPub', middleware, (req, res) => {
     // console.log(id);
     mySqlConnection.query("select id, \
             id_publicacion_com, \
+            id_usu_comenta, \
             comentario, \
             calificacion, \
             activo \
-            from comentario where id_publicacion_com = ? and activo ='S'", idPub, (err, rows, fields) => {
+            from comentario where id_publicacion_com = ? and activo ='S' ORDER BY id DESC", idPub, (err, rows, fields) => {
 
         if (!err) {
             res.json({

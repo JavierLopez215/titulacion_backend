@@ -1,9 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const config = require('../../config/config');
+const multer = require('multer')
 
 const mySqlConnection = require('../connection/connection');
 const middleware = require('../middleware/middleware');
+
+var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, __dirname+'/../files/archivos')
+    },
+    filename: function (req, file, cb) {
+      cb(null, file.fieldname + '_' + Date.now()+"_"+file.originalname)
+    }
+  })
+   
+  var upload = multer({ storage: storage })
 
 //obtener publicacion por su id
 router.get('/getPubId/:idPub', middleware, (req, res) => {
@@ -24,7 +36,7 @@ router.get('/getPubId/:idPub', middleware, (req, res) => {
     from publicacion pub, usuario usu, especialidad es where \
     pub.id_usuario_pub=usu.id and \
     es.id=pub.id_especialidad and\
-    pub.id = ? and pub.activo ='S'", idPub, (err, rows, fields) => {
+    pub.id = ? and pub.activo ='S' ORDER BY id DESC", idPub, (err, rows, fields) => {
 
         if (!err) {
             res.json({
@@ -56,7 +68,7 @@ router.get('/getPubUser/:idUsu', middleware, (req, res) => {
     id_especialidad, \
     activo, \
     creado \
-    from publicacion where id_usuario_pub = ? and activo ='S'", idUsu, (err, rows, fields) => {
+    from publicacion where id_usuario_pub = ? and activo ='S' ORDER BY id DESC", idUsu, (err, rows, fields) => {
 
         if (!err) {
             res.json({
@@ -88,7 +100,7 @@ router.get('/getTopPubUser/:idUsu', middleware, (req, res) => {
     id_especialidad, \
     activo, \
     creado \
-    from publicacion where id_usuario_pub = ? and activo ='S' LIMIT 0,5", idUsu, (err, rows, fields) => {
+    from publicacion where id_usuario_pub = ? and activo ='S' ORDER BY id DESC LIMIT 0,5", idUsu, (err, rows, fields) => {
 
         if (!err) {
             res.json({
@@ -121,7 +133,7 @@ router.get('/getPubCom/:idUsu', middleware, (req, res) => {
     id_especialidad, \
     activo, \
     creado \
-    from publicacion where id_usuario_pub <> ? and estado='P' and activo ='S'", idUsu, (err, rows, fields) => {
+    from publicacion where id_usuario_pub <> ? and estado='P' and activo ='S' ORDER BY id DESC", idUsu, (err, rows, fields) => {
 
         if (!err) {
             res.json({
@@ -149,8 +161,8 @@ router.get('/getDetalles/:idPub', middleware, (req, res) => {
     mySqlConnection.query("select id, \
             id_publicacion, \
             descripcion, \
-            archivo, \
-            tipo_archivo \
+            contenido, \
+            tipo \
             from detalle_publicacion where id_publicacion = ?", idPub, (err, rows, fields) => {
 
         if (!err) {
@@ -170,11 +182,36 @@ router.get('/getDetalles/:idPub', middleware, (req, res) => {
     });
 });
 
+// guardar Archivos
+router.post('/saveFiles', [upload.array('files'),middleware], (req, res,) => {
+    if (!req.files) {
+        // const error = new Error('Please choose files')
+        // error.httpStatusCode = 400
+        // return next(error)
+        res.json({
+            ok: 0,
+            mensaje: 'No se encontraron archivos',
+            data: null
+        });
+      }
+      else{
+        res.json({
+            ok: 1,
+            mensaje: 'Ingreso Correcto',
+            data: req.files
+        });
+      }
+    
+});
+
+
 //ingreso de publicaciones
-router.post('/post', middleware, (req, res) => {
+router.post('/post', middleware, (req, res,) => {
     const data = req.body;
-    const detalles = data.detalles;
-    let error_ = false;
+    // console.log(data)
+    const detalles = data.listaDetalles;
+    // console.log(req.files)
+    // let error_ = false;
 
     mySqlConnection.beginTransaction();
 
@@ -195,20 +232,20 @@ router.post('/post', middleware, (req, res) => {
                     mySqlConnection.query("Insert into detalle_publicacion ( \
                         id_publicacion, \
                         descripcion, \
-                        archivo, \
-                        tipo_archivo) VALUES ?",
+                        contenido, \
+                        tipo) VALUES ?",
 
                         // [detalles.map(item => 
                         //     [id_C, item.descripcion, item.archivo , item.tipo_archivo])],
                         [detalles.map(element =>
-                            [id_P, element.descripcion, element.archivo, element.tipo_archivo]
+                            [id_P, element.descripcion, element.contenido, element.tipo]
                         )],
                         (err, result, fields) => {
                             if (err) {
                                 mySqlConnection.rollback();
                                 res.json({
                                     ok: 0,
-                                    mensaje: 'Ha ocurrido un error',
+                                    mensaje: err,
                                     data: null
                                 });
                                 // throw err;

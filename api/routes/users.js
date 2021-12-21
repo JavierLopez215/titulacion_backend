@@ -85,7 +85,7 @@ router.post('/update', middleware, (req, res) => {
 router.post('/updatePicture', [upload.single('file'), middleware], (req, res) => {
     const namePicture = req.file.filename;
     const old_user = req.data;
-    console.log()
+    console.log(req.file);
 
     mySqlConnection.query("UPDATE usuario SET foto = ? where id = ?",
         [namePicture, old_user.id],
