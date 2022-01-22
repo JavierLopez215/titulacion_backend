@@ -12,7 +12,7 @@ router.get('/get/:idUsu', middleware, (req, res) => {
     mySqlConnection.query("Select eu.id, \
     eu.id_especialidad, \
     e.nombre,e.descripcion, eu.id_usuario \
-    from especialidad as e, `especialidad-usuario` as eu \
+    from especialidad as e, `especialidad_usuario` as eu \
     where eu.id_especialidad=e.id and eu.id_usuario = ? ", id, (err, rows, fields) => {
         if (!err) {
             res.json({
@@ -35,7 +35,7 @@ router.get('/get/:idUsu', middleware, (req, res) => {
 router.post('/post', (req, res) => {
     const data = req.body;
 
-    mySqlConnection.query("Insert into `especialidad-usuario` ( \
+    mySqlConnection.query("Insert into `especialidad_usuario` ( \
         id_usuario,\
         id_especialidad) VALUES (?,?)",
         [data.id_usuario, data.id_especialidad],
@@ -62,7 +62,7 @@ router.post('/post', (req, res) => {
 router.delete('/delete/:idEU', (req, res) => {
     const idEU = req.params.idEU;
 
-    mySqlConnection.query("Delete from `especialidad-usuario` WHERE id = ?",
+    mySqlConnection.query("Delete from `especialidad_usuario` WHERE id = ?",
         idEU, (err, result, fields) => {
             if (!err) {
                 res.json({

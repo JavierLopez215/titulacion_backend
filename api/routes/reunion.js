@@ -15,8 +15,7 @@ router.get('/aceptadas/getIdUsuSol/:idUsu', middleware, (req, res) => {
             reu.descripcion, \
             reu.id_usuario_sol,\
             reu.id_usuario_ace, \
-            usu_ace.nombre,\
-            usu_ace.apellido,\
+            CONCAT(usu_ace.nombre,' ', usu_ace.apellido) as nombreA, \
             usu_ace.foto,\
             reu.fecha_sol, \
             reu.fecha_ace, \
@@ -73,9 +72,45 @@ router.get('/historial/getIdUsuSol/:idUsu', middleware, (req, res) => {
     });
 });
 
-//Seleccionar reunion por id
-router.get('/getIdReu/:idReu', middleware, (req, res) => {
-    const id = parseInt(req.params.idReu);
+//Seleccionar reuniones de la comunidad aceptadas del usuario
+router.get('/aceptadasComunidad/getIdUsuSol/:idUsu', middleware, (req, res) => {
+    const id = parseInt(req.params.idUsu);
+    // console.log(id);
+    mySqlConnection.query("SELECT reu.id, \
+            reu.titulo, \
+            reu.descripcion, \
+            reu.id_usuario_sol,\
+            reu.id_usuario_ace, \
+            CONCAT(usu_ace.nombre,' ', usu_ace.apellido) as nombreA, \
+            usu_ace.foto,\
+            reu.fecha_sol, \
+            reu.fecha_ace, \
+            reu.hora, \
+            reu.estado, \
+            reu.activo From reunion reu, usuario usu_ace \
+            WHERE reu.id_usuario_ace=usu_ace.id\
+            and reu.id_usuario_ace = ? and reu.activo='S'and reu.estado='A'", id, (err, rows, fields) => {
+        if (!err) {
+            res.json({
+                ok: 1,
+                mensaje: 'Reuniones selecionadas',
+                data: rows
+            });
+        } else {
+            console.log(err);
+            res.json({
+                ok: 0,
+                mensaje: 'Ha ocurrido un error',
+                data: null
+            });
+            
+        }
+    });
+});
+
+//Seleccionar historial de reuniones comunidad
+router.get('/historialComunidad/getIdUsuSol/:idUsu', middleware, (req, res) => {
+    const id = parseInt(req.params.idUsu);
     // console.log(id);
     mySqlConnection.query("SELECT id, \
         titulo, \
@@ -86,7 +121,45 @@ router.get('/getIdReu/:idReu', middleware, (req, res) => {
         fecha_ace, \
         hora, \
         estado, \
-        activo From reunion WHERE id = ? and activo='S'", id, (err, rows, fields) => {
+        activo From reunion WHERE id_usuario_sol <> ? and activo='S' and estado<>'A'", id, (err, rows, fields) => {
+        if (!err) {
+            res.json({
+                ok: 1,
+                mensaje: 'Reuniones selecionadas',
+                data: rows
+            });
+        } else {
+            res.json({
+                ok: 0,
+                mensaje: 'Ha ocurrido un error',
+                data: null
+            });
+            console.log(err);
+        }
+    });
+});
+
+//Seleccionar reunion por id
+router.get('/getIdReu/:idReu', middleware, (req, res) => {
+    const id = parseInt(req.params.idReu);
+    // console.log(id);
+    mySqlConnection.query("SELECT reu.id, \
+    reu.titulo, \
+    reu.descripcion, \
+    reu.id_usuario_sol, \
+    reu.id_usuario_ace, \
+    CONCAT(usu_sol.nombre,' ', usu_sol.apellido) as nombreS, \
+    CONCAT(usu_ace.nombre,' ', usu_ace.apellido) as nombreA, \
+    usu_sol.foto as fotoS, \
+    usu_ace.foto as fotoA, \
+    reu.fecha_sol, \
+    reu.fecha_ace, \
+    reu.hora, \
+    reu.estado, \
+    reu.activo From reunion reu, usuario usu_sol, usuario usu_ace \
+    WHERE reu.id_usuario_sol=usu_sol.id \
+    and reu.id_usuario_ace=usu_ace.id \
+    and reu.id = ? and reu.activo='S'and reu.estado='A'", id, (err, rows, fields) => {
         if (!err) {
             res.json({
                 ok: 1,
@@ -104,7 +177,7 @@ router.get('/getIdReu/:idReu', middleware, (req, res) => {
     });
 });
 
-//Ingresar una nueva runion
+//Ingresar una nueva reunion
 
 router.post('/post', (req, res) => {
     const data = req.body;
@@ -122,12 +195,14 @@ router.post('/post', (req, res) => {
         [data.titulo, data.descripcion, data.id_usuario_sol, null, data.fecha_sol, null, data.hora, data.estado, 'S'],
         (err, result, fields) => {
             if (!err) {
+                console.log(result)
                 res.json({
                     ok: 1,
                     mensaje: 'Ingreso Correcto',
                     data: data
                 });
             } else {
+                console.log(err)
                 res.json({
                     ok: 0,
                     mensaje: 'Ha ocurrido un error',

@@ -2,10 +2,12 @@ const express = require('express');
 const app = express();
 var files = require('path');
 var path_files = files.join(`${__dirname}/api/files/archivos`);
+var path_filesComentarios = files.join(`${__dirname}/api/files/archivosComentarios`);
 var path_images = files.join(`${__dirname}/api/files/images`);
 
 app.use('/archivos', express.static(path_files));
 app.use('/images', express.static( path_images));
+app.use('/archivosComentarios', express.static( path_filesComentarios));
 
 
 // const uploads = multer({dest: './files'});

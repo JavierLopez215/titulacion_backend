@@ -211,17 +211,21 @@ router.get('/reunionUsuario/:idUsu', middleware, (req, res) => {
 //lista de calificaciones de una reunion
 router.get('/reunionId/:idRe', middleware, (req, res) => {
     const id = parseInt(req.params.idRe);
-    console.log(id);
+    // console.log(id);
     mySqlConnection.query("SELECT r.id, \
-                            r.reseña, \
+                            r.motivo_cal, \
                             r.calificacion, \
                             r.id_usuario_cali, \
-                            u.nombre as usu_cali, \
+                            u.nombre as nombreC, \
+                            u.foto as fotoC, \
                             r.id_usuario_rec,\
+                            ur.nombre as nombreR, \
+                            ur.foto as fotoR, \
                             r.id_reunion_cal, \
                             r.creado\
-                            from calificacion_reunion as r, usuario as u \
-                            where r.id_usuario_rec = u.id \
+                            from calificacion_reunion as r, usuario as u, usuario as ur \
+                            where r.id_usuario_cali = u.id \
+                            and r.id_usuario_rec = ur.id \
                             and r.id_reunion_cal = ?", id, (err, rows, fields) => {
         if (!err) {
             res.json({
@@ -240,17 +244,17 @@ router.get('/reunionId/:idRe', middleware, (req, res) => {
     });
 });
 
-//guardar reunion
+//guardar calificacion reunion
 router.post('/post/reunion', (req, res) => {
     const data = req.body;
 
     mySqlConnection.query("INSERT INTO calificacion_reunion( \
-        reseña, \
+        motivo_cal, \
         calificacion, \
         id_usuario_cali, \
         id_usuario_rec, \
         id_reunion_cal) VALUES (?,?,?,?,?)",
-        [data.reseña, data.calificacion, data.id_usuario_cali, data.id_usuario_rec, data.id_reunion_cal],
+        [data.motivo_cal, data.calificacion, data.id_usuario_cali, data.id_usuario_rec, data.id_reunion_cal],
         (err, result, fields) => {
             if (!err) {
                 res.json({
@@ -259,6 +263,7 @@ router.post('/post/reunion', (req, res) => {
                     data: data
                 });
             } else {
+                // console.log(err)
                 res.json({
                     ok: 0,
                     mensaje: 'Ha ocurrido un error',
@@ -325,7 +330,7 @@ router.get('/publicacionId/:idPub', middleware, (req, res) => {
         if (!err) {
             res.json({
                 ok: 1,
-                mensaje: 'Reseñas reuniones selecionadas',
+                mensaje: 'Calificaciones selecionadas',
                 data: rows
             });
         } else {
@@ -404,6 +409,39 @@ router.post('/post/publicacion', (req, res) => {
 });
 
 
+// Calificaciones comentarios
+/////////////////////////////////////////////////////
 
+router.get('/comentarioId/:idPub', middleware, (req, res) => {
+    const id = parseInt(req.params.idPub);
+    // console.log(id);
+    mySqlConnection.query("SELECT cc.id, \
+    cc.motivo_cal,  \
+    cc.calificacion,  \
+    cc.id_usuario_cal, \
+    CONCAT(u.nombre,' ',u.apellido) as nombre,  \
+    u.foto as foto,  \
+    cc.id_comentario_cal,  \
+    cc.creacion  \
+    from calificacion_comentario as cc, usuario as u  \
+    where cc.id_usuario_cal = u.id  \
+    and cc.id_comentario_cal = ?  \
+    ORDER BY cc.id DESC", id, (err, rows, fields) => {
+        if (!err) {
+            res.json({
+                ok: 1,
+                mensaje: 'Calificaciones selecionadas',
+                data: rows
+            });
+        } else {
+            res.json({
+                ok: 0,
+                mensaje: 'Ha ocurrido un error',
+                data: null
+            });
+            console.log(err);
+        }
+    });
+});
 
 module.exports=router;
