@@ -23,6 +23,7 @@ router.get('/aceptadas/getIdUsuSol/:idUsu', middleware, (req, res) => {
             reu.estado, \
             reu.activo From reunion reu, usuario usu_ace \
             WHERE reu.id_usuario_ace=usu_ace.id\
+            and reu.fecha_sol >= CURDATE() \
             and id_usuario_sol = ? and reu.activo='S'and reu.estado='A'", id, (err, rows, fields) => {
         if (!err) {
             res.json({
@@ -54,7 +55,9 @@ router.get('/historial/getIdUsuSol/:idUsu', middleware, (req, res) => {
         fecha_ace, \
         hora, \
         estado, \
-        activo From reunion WHERE id_usuario_sol = ? and activo='S' and estado<>'A'", id, (err, rows, fields) => {
+        activo From reunion WHERE id_usuario_sol = ? \
+        and fecha_sol >= CURDATE() \
+        and activo='S' order by id desc", id, (err, rows, fields) => {
         if (!err) {
             res.json({
                 ok: 1,
@@ -89,6 +92,7 @@ router.get('/aceptadasComunidad/getIdUsuSol/:idUsu', middleware, (req, res) => {
             reu.estado, \
             reu.activo From reunion reu, usuario usu_ace \
             WHERE reu.id_usuario_ace=usu_ace.id\
+            and reu.fecha_sol >= CURDATE() \
             and reu.id_usuario_ace = ? and reu.activo='S'and reu.estado='A'", id, (err, rows, fields) => {
         if (!err) {
             res.json({
@@ -113,15 +117,29 @@ router.get('/historialComunidad/getIdUsuSol/:idUsu', middleware, (req, res) => {
     const id = parseInt(req.params.idUsu);
     // console.log(id);
     mySqlConnection.query("SELECT id, \
-        titulo, \
-        descripcion, \
-        id_usuario_sol, \
-        id_usuario_ace, \
-        fecha_sol, \
-        fecha_ace, \
-        hora, \
-        estado, \
-        activo From reunion WHERE id_usuario_sol <> ? and activo='S' and estado<>'A'", id, (err, rows, fields) => {
+    titulo,  \
+    descripcion,  \
+    id_usuario_sol,  \
+    id_usuario_ace,  \
+    fecha_sol,  \
+    fecha_ace,  \
+    hora,  \
+    estado,  \
+    activo From reunion WHERE id_usuario_sol <> ?  \
+    and fecha_sol < CURDATE() \
+    and activo='S' and estado='P' \
+    UNION \
+    SELECT id,  \
+    titulo,  \
+    descripcion,  \
+    id_usuario_sol,  \
+    id_usuario_ace,  \
+    fecha_sol,  \
+    fecha_ace,  \
+    hora,  \
+    estado,  \
+    activo From reunion WHERE id_usuario_ace = ?  \
+    and fecha_sol < CURDATE() and activo='S' and estado='A'", [id, id], (err, rows, fields) => {
         if (!err) {
             res.json({
                 ok: 1,
@@ -139,9 +157,10 @@ router.get('/historialComunidad/getIdUsuSol/:idUsu', middleware, (req, res) => {
     });
 });
 
-//Seleccionar reunion por id
+//Seleccionar reunion por id Aceptada
 router.get('/getIdReu/:idReu', middleware, (req, res) => {
     const id = parseInt(req.params.idReu);
+    // console.log(id)
     // console.log(id);
     mySqlConnection.query("SELECT reu.id, \
     reu.titulo, \
@@ -152,6 +171,10 @@ router.get('/getIdReu/:idReu', middleware, (req, res) => {
     CONCAT(usu_ace.nombre,' ', usu_ace.apellido) as nombreA, \
     usu_sol.foto as fotoS, \
     usu_ace.foto as fotoA, \
+    usu_sol.telefono as telefonoS, \
+    usu_ace.telefono as telefonoA, \
+    usu_sol.correo as correoS, \
+    usu_ace.correo as correoA, \
     reu.fecha_sol, \
     reu.fecha_ace, \
     reu.hora, \
@@ -160,6 +183,42 @@ router.get('/getIdReu/:idReu', middleware, (req, res) => {
     WHERE reu.id_usuario_sol=usu_sol.id \
     and reu.id_usuario_ace=usu_ace.id \
     and reu.id = ? and reu.activo='S'and reu.estado='A'", id, (err, rows, fields) => {
+        if (!err) {
+            res.json({
+                ok: 1,
+                mensaje: 'Reunion selecionada',
+                data: rows
+            });
+        } else {
+            res.json({
+                ok: 0,
+                mensaje: 'Ha ocurrido un error',
+                data: null
+            });
+            console.log(err);
+        }
+    });
+});
+
+//Seleccionar reunion por id Aceptada
+router.get('/getIdReuP/:idReu', middleware, (req, res) => {
+    const id = parseInt(req.params.idReu);
+        mySqlConnection.query("SELECT reu.id, \
+        reu.titulo, \
+        reu.descripcion, \
+        reu.id_usuario_sol, \
+        reu.id_usuario_ace, \
+        CONCAT(usu_sol.nombre,' ', usu_sol.apellido) as nombreS, \
+        usu_sol.foto as fotoS, \
+        usu_sol.telefono as telefonoS, \
+        usu_sol.correo as correoS, \
+        reu.fecha_sol, \
+        reu.fecha_ace, \
+        reu.hora, \
+        reu.estado, \
+        reu.activo From reunion reu, usuario usu_sol \
+        WHERE reu.id_usuario_sol=usu_sol.id \
+        and reu.id = ? and reu.activo='S'", id, (err, rows, fields) => {
         if (!err) {
             res.json({
                 ok: 1,

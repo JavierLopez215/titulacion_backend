@@ -284,10 +284,10 @@ router.put('/update/reunion/:idCal', (req, res) => {
     const idCal = req.params.idCal;
 
     mySqlConnection.query("UPDATE calificacion_reunion SET \
-        reseña=?, \
+        motivo_cal=?, \
         calificacion=? \
         WHERE id = ?",
-        [data.reseña, data.calificacion, idCal],
+        [data.motivo_cal, data.calificacion, idCal],
         (err, result, fields) => {
             if (!err) {
                 res.json({

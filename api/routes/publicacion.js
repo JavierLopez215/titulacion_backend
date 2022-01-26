@@ -120,6 +120,42 @@ router.get('/getTopPubUser/:idUsu', middleware, (req, res) => {
 });
 
 
+router.get('/getColPubUser/:idUsu', middleware, (req, res) => {
+
+    const idUsu = parseInt(req.params.idUsu);
+    //  console.log(idUsu);
+    mySqlConnection.query("select DISTINCT p.id, \
+    p.id_usuario_pub, \
+    p.titulo, \
+    p.descripcion, \
+    p.estado, \
+    p.id_especialidad, \
+    p.activo, \
+    p.creado \
+    from publicacion p, comentario c \
+    where p.id_usuario_pub <> ? \
+    and c.id_usu_comenta = ? \
+    and c.id_publicacion_com = p.id \
+    and p.activo ='S' ORDER BY id DESC", [idUsu, idUsu], (err, rows, fields) => {
+
+        if (!err) {
+            res.json({
+                ok: 1,
+                mensaje: 'Publicaciones selecionadas',
+                data: rows
+            });
+        } else {
+            res.json({
+                ok: 0,
+                mensaje: 'Ha ocurrido un error',
+                data: null
+            });
+            console.log(err);
+        }
+    });
+});
+
+
 //lista de publicaciones de un usuario
 router.get('/getPubCom/:idUsu', middleware, (req, res) => {
 
