@@ -188,17 +188,8 @@ router.get('/getDetallesCom/:idPub', middleware, (req, res) => {
 
 
 router.post('/saveFiles', [upload.array('files'), middleware], (req, res, err) => {
-    // if (err) {
-    //     res.json({
-    //         ok: 0,
-    //         mensaje: err,
-    //         data: null
-    //     });
-    // } else {
+  
     if (!req.files) {
-        // const error = new Error('Please choose files')
-        // error.httpStatusCode = 400
-        // return next(error)
         res.json({
             ok: 0,
             mensaje: 'No se encontraron archivos',

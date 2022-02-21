@@ -343,6 +343,27 @@ router.put('/delete/:idPub', middleware, (req, res) => {
     )
 });
 
+router.put('/comPublicacion/:idPub', middleware, (req, res) => {
+    const idPub = req.params.idPub;
+
+    mySqlConnection.query("UPDATE publicacion SET estado = 'C' where id = ?",idPub,(err, result,fields) => {
+            if (!err) {
+                res.json({
+                    ok: 1,
+                    mensaje: 'Publicación Eliminada',
+                    data: null,
+                });
+            } else {
+                res.json({
+                    ok: 0,
+                    mensaje: 'Ha ocurrido un error',
+                    data: null
+                });
+            }
+        }
+    )
+});
+
 //Editar publicacion
 router.put('/update/:idPub', middleware, (req, res) => {
     const data = req.body;

@@ -444,4 +444,33 @@ router.get('/comentarioId/:idPub', middleware, (req, res) => {
     });
 });
 
+router.post('/post/comentario', (req, res) => {
+    const data = req.body;
+
+    mySqlConnection.query("INSERT INTO calificacion_comentario( \
+        motivo_cal, \
+        calificacion, \
+        id_usuario_cal, \
+        id_comentario_cal) VALUES (?,?,?,?)",
+        [data.motivo_cal, data.calificacion, data.id_usuario_cal, data.id_comentario_cal],
+        (err, result, fields) => {
+            if (!err) {
+                res.json({
+                    ok: 1,
+                    mensaje: 'Ingreso Correcto',
+                    data: data
+                });
+            } else {
+                res.json({
+                    ok: 0,
+                    mensaje: 'Ha ocurrido un error',
+                    data: null
+                });
+                // console.log(err)
+            }
+        }
+
+    )
+});
+
 module.exports=router;

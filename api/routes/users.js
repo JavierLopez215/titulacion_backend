@@ -3,6 +3,7 @@ const router = express.Router();
 const config = require('../../config/config');
 const multer = require('multer');
 const fs = require('fs')
+const bcrypt = require('bcryptjs')
 
 const middleware = require('../middleware/middleware');
 
@@ -11,20 +12,20 @@ const jwt = require('jsonwebtoken');
 
 var storage = multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, __dirname+'/../files/images/profile')
+        cb(null, __dirname + '/../files/images/profile')
     },
     filename: function (req, file, cb) {
-      cb(null, file.fieldname + '_' + Date.now()+"_"+file.originalname)
+        cb(null, file.fieldname + '_' + Date.now() + "_" + file.originalname)
     }
-  })
-   
-  var upload = multer({ storage: storage })
+})
+
+var upload = multer({ storage: storage })
 
 //Seleccionar datos por id de Usuario
 router.get('/userId/:id', (req, res) => {
     const id = req.params.id;
     console.log(id);
-    mySqlConnection.query('select * from usuario where id = ?',id, (err, rows, fields) => {
+    mySqlConnection.query('select * from usuario where id = ?', id, (err, rows, fields) => {
         if (!err) {
             res.json(rows);
         } else {
@@ -52,13 +53,13 @@ router.post('/update', middleware, (req, res) => {
         perfil_prof = ? where id = ?",
         [data.nombre, data.apellido, data.direccion,
         data.telefono, data.perfil_prof, old_user.id],
-        (err, result,fields) => {
+        (err, result, fields) => {
             if (!err) {
                 old_user.nombre = data.nombre;
                 old_user.apellido = data.apellido;
                 old_user.direccion = data.direccion;
                 old_user.telefono = data.telefono;
-                old_user.perfil_prof = data.perfil_prof; 
+                old_user.perfil_prof = data.perfil_prof;
                 let user_ = JSON.stringify(old_user);
                 const token = jwt.sign(user_, config.SECRET_PASS);
                 res.json({
@@ -89,20 +90,21 @@ router.post('/updatePicture', [upload.single('file'), middleware], (req, res) =>
 
     mySqlConnection.query("UPDATE usuario SET foto = ? where id = ?",
         [namePicture, old_user.id],
-        (err, result,fields) => {
+        (err, result, fields) => {
             if (!err) {
+                if (old_user.foto=='profile.png') {
+                    try {
+                        fs.unlinkSync(`api/files/images/profile/${old_user.foto}`)
+                        // console.log('File removed')
+                    } catch (err) {
+                        console.error('ha ocurrido un error')
+                    }
+                }
 
-                try {
-                    fs.unlinkSync(`api/files/images/profile/${old_user.foto}`)
-                    // console.log('File removed')
-                  } catch(err) {
-                    console.error('ha ocurrido un error')
-                  }
-
-                old_user.foto = namePicture; 
+                old_user.foto = namePicture;
                 let user_ = JSON.stringify(old_user);
                 const token = jwt.sign(user_, config.SECRET_PASS);
-                
+
                 res.json({
                     ok: 1,
                     mensaje: 'Actualizado Correctamente',
@@ -125,9 +127,9 @@ router.post('/updatePicture', [upload.single('file'), middleware], (req, res) =>
 //Registro de nuevos Usuarios
 router.post('/register', (req, res) => {
     const data = req.body;
-
+    const pass = bcrypt.hashSync(data.contrasena, 15)
     const user = {
-        id:0,
+        id: 0,
         nombre: data.nombre,
         apellido: data.apellido,
         direccion: data.direccion,
@@ -135,6 +137,7 @@ router.post('/register', (req, res) => {
         perfil_prof: data.perfil_prof,
         correo: data.correo,
         foto: 'profile.png',
+        contraseña:pass,
         tipo: 2,
         activo: 'S'
     }
@@ -150,8 +153,8 @@ router.post('/register', (req, res) => {
         activo) VALUES (?,?,?,?,?,?,?,?,?)",
         [data.nombre, data.apellido, data.direccion,
         data.telefono, data.perfil_prof, data.correo,
-        data.contrasena, 2, 'S'],
-        (err, result,fields) => {
+        pass, 2, 'S'],
+        (err, result, fields) => {
             if (!err) {
                 user.id = result.insertId;
                 let user_ = JSON.stringify(user);
@@ -163,6 +166,7 @@ router.post('/register', (req, res) => {
                     token: token
                 });
             } else {
+                console.log(err)
                 res.json({
                     ok: 0,
                     mensaje: 'Ha ocurrido un error',
@@ -177,30 +181,44 @@ router.post('/register', (req, res) => {
 
 //Inicio de sesion de usuarios
 router.post('/login', (req, res) => {
+
     const { correo, contrasena } = req.body;
+
     mySqlConnection.query("SELECT id, \
                                 nombre, \
                                 apellido, \
                                 direccion, \
                                 telefono, \
                                 perfil_prof, \
-                                correo,tipo, foto, \
+                                correo,tipo, foto, contraseña,\
                                 activo FROM usuario \
                                 where correo=? \
-                                and contraseña=?",
-        [correo, contrasena],
+                                and activo='S'",
+        [correo],
         (err, data, fields) => {
             if (!err) {
                 //console.log(rows);
                 if (data.length > 0) {
-                    let user = JSON.stringify(data[0]);
-                    const token = jwt.sign(user, config.SECRET_PASS);
-                    res.json({
-                        ok: 1,
-                        mensaje: 'Usuario Correcto',
-                        data: data,
-                        token: token
-                    });
+                    console.log(data)
+                    if (bcrypt.compareSync(contrasena, data[0].contraseña)) {
+                        let user = JSON.stringify(data[0]);
+                        const token = jwt.sign(user, config.SECRET_PASS);
+                        res.json({
+                            ok: 1,
+                            mensaje: 'Usuario Correcto',
+                            data: data,
+                            token: token
+                        });
+                    }
+                    else{
+                        res.json({
+                            ok: 0,
+                            mensaje: 'Usuario o clave incorrecta-contraseña',
+                            data: null,
+                            token: null
+                        });
+                    }
+
                 } else {
                     res.json({
                         ok: 0,
@@ -221,7 +239,7 @@ router.post('/login', (req, res) => {
 });
 
 router.post('/test2', middleware, (req, res) => {
-    res.json({mensaje:'Informacion secreta'});
+    res.json({ mensaje: 'Informacion secreta' });
 });
 
 module.exports = router;
