@@ -127,7 +127,7 @@ router.post('/updatePicture', [upload.single('file'), middleware], (req, res) =>
 //Registro de nuevos Usuarios
 router.post('/register', (req, res) => {
     const data = req.body;
-    const pass = bcrypt.hashSync(data.contrasena, 15)
+    const pass = bcrypt.hashSync(data.contrasena, 10)
     const user = {
         id: 0,
         nombre: data.nombre,
@@ -184,6 +184,8 @@ router.post('/login', (req, res) => {
 
     const { correo, contrasena } = req.body;
 
+    console.log('contraseña',contrasena)
+
     mySqlConnection.query("SELECT id, \
                                 nombre, \
                                 apellido, \
@@ -199,14 +201,13 @@ router.post('/login', (req, res) => {
             if (!err) {
                 //console.log(rows);
                 if (data.length > 0) {
-                    console.log(data)
                     if (bcrypt.compareSync(contrasena, data[0].contraseña)) {
                         let user = JSON.stringify(data[0]);
                         const token = jwt.sign(user, config.SECRET_PASS);
                         res.json({
                             ok: 1,
                             mensaje: 'Usuario Correcto',
-                            data: data,
+                            data: user,
                             token: token
                         });
                     }

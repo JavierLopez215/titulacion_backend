@@ -29,26 +29,29 @@ app.use(cors());
 const userRoute = require ('./api/routes/users');
 app.use('/user', userRoute);
 
-const aporteRoute = require ('./api/routes/aporte');
+const aporteRoute = require ('./api/routes/files');
 app.use('/aporte', aporteRoute);
 
-const calificacionRoute = require ('./api/routes/calificacion');
+const calificacionRoute = require ('./api/routes/grades');
 app.use('/calificacion', calificacionRoute);
 
-const comentarioRoute = require ('./api/routes/comentario');
+const comentarioRoute = require ('./api/routes/comment');
 app.use('/comentario', comentarioRoute);
 
-const espec_usuRoute = require ('./api/routes/especialidad-usuario');
+const espec_usuRoute = require ('./api/routes/speciallity-user');
 app.use('/espec-usu', espec_usuRoute);
 
-const especialidadRoute = require ('./api/routes/especialidad');
+const especialidadRoute = require ('./api/routes/speciallity');
 app.use('/especialidad', especialidadRoute);
 
-const publicacionRoute = require ('./api/routes/publicacion');
+const publicacionRoute = require ('./api/routes/publication');
 app.use('/publicacion', publicacionRoute);
 
-const reunionRoute = require ('./api/routes/reunion');
+const reunionRoute = require ('./api/routes/meeting');
 app.use('/reunion', reunionRoute);
+
+const labelRoute = require ('./api/routes/label');
+app.use('/etiqueta', labelRoute);
 
 // const calificacionRoute = require ('./api/routes/calificacion');
 // app.use('/calificacion', reunionRoute);

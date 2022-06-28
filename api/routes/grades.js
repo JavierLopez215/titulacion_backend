@@ -63,7 +63,7 @@ router.get('/comentario/:idCom', middleware, (req, res) => {
 
 
 //Registro de nuevas calificaciones de aportes
-router.post('/aporte/post', (req, res) => {
+router.post('/aporte/post', middleware, (req, res) => {
     const data = req.body;
 
     mySqlConnection.query("Insert into calificacion_aporte ( \
@@ -94,7 +94,7 @@ router.post('/aporte/post', (req, res) => {
 });
 
 //Registro de nuevas calificaciones de comentarios
-router.post('/comentario/post', (req, res) => {
+router.post('/comentario/post', middleware, (req, res) => {
     const data = req.body;
 
     mySqlConnection.query("Insert into calificacion_comentario ( \
@@ -245,7 +245,7 @@ router.get('/reunionId/:idRe', middleware, (req, res) => {
 });
 
 //guardar calificacion reunion
-router.post('/post/reunion', (req, res) => {
+router.post('/post/reunion', middleware, (req, res) => {
     const data = req.body;
 
     mySqlConnection.query("INSERT INTO calificacion_reunion( \
@@ -278,7 +278,7 @@ router.post('/post/reunion', (req, res) => {
 
 
 // Actualizar calificacion de reunion
-router.put('/update/reunion/:idCal', (req, res) => {
+router.put('/update/reunion/:idCal', middleware, (req, res) => {
 
     const data = req.body;
     const idCal = req.params.idCal;
@@ -310,6 +310,41 @@ router.put('/update/reunion/:idCal', (req, res) => {
 
 
 //Calificaciones de publicaciones
+
+router.get('/publicacionUsuIdPub/:idPub', middleware, (req, res) => {
+    const id_usu = req.data.id;
+    // console.log(id_usu)
+    const id = parseInt(req.params.idPub);
+    // console.log('id_comentario',id);
+    mySqlConnection.query("SELECT cp.id, \
+    cp.motivo_cal,  \
+    cp.calificacion,  \
+    cp.id_usuario_cal, \
+    CONCAT(u.nombre,' ',u.apellido) as nombre,  \
+    u.foto as foto,  \
+    cp.id_publicacion_cal,  \
+    cp.creacion  \
+    from calificacion_publicacion as cp, usuario as u  \
+    where cp.id_usuario_cal = u.id  \
+    and cp.id_publicacion_cal = ?  \
+    and cp.id_usuario_cal = ? \
+    ORDER BY cp.id DESC", [id, id_usu], (err, rows, fields) => {
+        if (!err) {
+            res.json({
+                ok: 1,
+                mensaje: 'Calificaciones selecionadas',
+                data: rows
+            });
+        } else {
+            res.json({
+                ok: 0,
+                mensaje: 'Ha ocurrido un error',
+                data: null
+            });
+            console.log(err);
+        }
+    });
+});
 
 // lista de calificaciones de publicaciones
 router.get('/publicacionId/:idPub', middleware, (req, res) => {
@@ -344,42 +379,9 @@ router.get('/publicacionId/:idPub', middleware, (req, res) => {
     });
 });
 
-// lista de calificaciones de Usuarios en publicaciones
-router.get('/publicacionByUsu/:idUsu', middleware, (req, res) => {
-    const id = parseInt(req.params.idUsu);
-    // console.log(id);
-    mySqlConnection.query("SELECT cp.id, \
-                            cp.motivo_cal, \
-                            cp.calificacion, \
-                            cp.id_usuario_cal, \
-                            CONCAT(u.nombre,' ',u.apellido) as nombre, \
-                            u.foto as foto, \
-                            cp.id_publicacion_cal, \
-                            cp.creacion \
-                            from calificacion_publicacion as cp, usuario as u, publicacion p \
-                            where cp.id_usuario_cal = u.id \
-                            and cp.id_publicacion_cal = p.id \
-                            and id_usuario_pub = ? \
-                            ORDER BY cp.id DESC", id, (err, rows, fields) => {
-        if (!err) {
-            res.json({
-                ok: 1,
-                mensaje: 'Calificaciones de publicaciones selecionadas',
-                data: rows
-            });
-        } else {
-            res.json({
-                ok: 0,
-                mensaje: 'Ha ocurrido un error',
-                data: null
-            });
-            console.log(err);
-        }
-    });
-});
 
 //guardar calificacion publicacion
-router.post('/post/publicacion', (req, res) => {
+router.post('/post/publicacion', middleware, (req, res) => {
     const data = req.body;
 
     mySqlConnection.query("INSERT INTO calificacion_publicacion( \
@@ -408,12 +410,78 @@ router.post('/post/publicacion', (req, res) => {
     )
 });
 
+router.put('/update/publicacion/:idCal', middleware, (req, res) => {
+
+    const data = req.body;
+    const idCal = req.params.idCal;
+
+    mySqlConnection.query("UPDATE calificacion_publicacion SET \
+        motivo_cal=?, \
+        calificacion=? \
+        WHERE id = ?",
+        [data.motivo_cal, data.calificacion, idCal],
+        (err, result, fields) => {
+            if (!err) {
+                res.json({
+                    ok: 1,
+                    mensaje: 'Calificación Actualizada',
+                    data: data
+                });
+            } else {
+                res.json({
+                    ok: 0,
+                    mensaje: 'Ha ocurrido un error',
+                    data: null
+                });
+                 console.log(err)
+            }
+        }
+
+    )
+});
+
 
 // Calificaciones comentarios
 /////////////////////////////////////////////////////
 
-router.get('/comentarioId/:idPub', middleware, (req, res) => {
-    const id = parseInt(req.params.idPub);
+router.get('/comentarioUsuIdCom/:idCom', middleware, (req, res) => {
+    const id_usu = req.data.id;
+    // console.log(id_usu)
+    const id = parseInt(req.params.idCom);
+    // console.log('id_comentario',id);
+    mySqlConnection.query("SELECT cc.id, \
+    cc.motivo_cal,  \
+    cc.calificacion,  \
+    cc.id_usuario_cal, \
+    CONCAT(u.nombre,' ',u.apellido) as nombre,  \
+    u.foto as foto,  \
+    cc.id_comentario_cal,  \
+    cc.creacion  \
+    from calificacion_comentario as cc, usuario as u  \
+    where cc.id_usuario_cal = u.id  \
+    and cc.id_comentario_cal = ?  \
+    and cc.id_usuario_cal = ? \
+    ORDER BY cc.id DESC", [id, id_usu], (err, rows, fields) => {
+        if (!err) {
+            res.json({
+                ok: 1,
+                mensaje: 'Calificaciones selecionadas',
+                data: rows
+            });
+        } else {
+            res.json({
+                ok: 0,
+                mensaje: 'Ha ocurrido un error',
+                data: null
+            });
+            console.log(err);
+        }
+    });
+});
+
+router.get('/comentarioId/:id', middleware, (req, res) => {
+    // console.log(req.data.id)
+    const id = parseInt(req.params.id);
     // console.log(id);
     mySqlConnection.query("SELECT cc.id, \
     cc.motivo_cal,  \
@@ -444,7 +512,7 @@ router.get('/comentarioId/:idPub', middleware, (req, res) => {
     });
 });
 
-router.post('/post/comentario', (req, res) => {
+router.post('/post/comentario', middleware, (req, res) => {
     const data = req.body;
 
     mySqlConnection.query("INSERT INTO calificacion_comentario( \
@@ -467,6 +535,36 @@ router.post('/post/comentario', (req, res) => {
                     data: null
                 });
                 // console.log(err)
+            }
+        }
+
+    )
+});
+
+router.put('/update/comentario/:idCal', middleware, (req, res) => {
+
+    const data = req.body;
+    const idCal = req.params.idCal;
+
+    mySqlConnection.query("UPDATE calificacion_comentario SET \
+        motivo_cal=?, \
+        calificacion=? \
+        WHERE id = ?",
+        [data.motivo_cal, data.calificacion, idCal],
+        (err, result, fields) => {
+            if (!err) {
+                res.json({
+                    ok: 1,
+                    mensaje: 'Calificación Actualizada',
+                    data: data
+                });
+            } else {
+                res.json({
+                    ok: 0,
+                    mensaje: 'Ha ocurrido un error',
+                    data: null
+                });
+                 console.log(err)
             }
         }
 
