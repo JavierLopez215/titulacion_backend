@@ -216,10 +216,10 @@ router.get('/reunionId/:idRe', middleware, (req, res) => {
                             r.motivo_cal, \
                             r.calificacion, \
                             r.id_usuario_cali, \
-                            u.nombre as nombreC, \
+                            CONCAT(u.nombre,' ',u.apellido) as nombreC,  \
                             u.foto as fotoC, \
                             r.id_usuario_rec,\
-                            ur.nombre as nombreR, \
+                            CONCAT(ur.nombre,' ',ur.apellido) as nombreR,  \
                             ur.foto as fotoR, \
                             r.id_reunion_cal, \
                             r.creado\
@@ -275,7 +275,6 @@ router.post('/post/reunion', middleware, (req, res) => {
 
     )
 });
-
 
 // Actualizar calificacion de reunion
 router.put('/update/reunion/:idCal', middleware, (req, res) => {

@@ -244,10 +244,7 @@ router.post('/saveFiles', [upload.array('files'),middleware], (req, res,) => {
 //ingreso de publicaciones
 router.post('/post', middleware, (req, res,) => {
     const data = req.body;
-    // console.log(data)
     const detalles = data.listaDetalles;
-    // console.log(req.files)
-    // let error_ = false;
 
     mySqlConnection.beginTransaction();
 
