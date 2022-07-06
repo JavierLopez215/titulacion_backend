@@ -37,7 +37,7 @@ router.get('/aceptadas/getIdUsuSol/:idUsu', middleware, (req, res) => {
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 });
@@ -69,7 +69,7 @@ router.get('/historial/getIdUsuSol/:idUsu', middleware, (req, res) => {
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 });
@@ -100,7 +100,7 @@ router.get('/aceptadasComunidad/getIdUsuSol/:idUsu', middleware, (req, res) => {
                 data: rows
             });
         } else {
-            console.log(err);
+            // console.log(err);
             res.json({
                 ok: 0,
                 mensaje: 'Ha ocurrido un error',
@@ -151,7 +151,7 @@ router.get('/historialComunidad/getIdUsuSol/:idUsu', middleware, (req, res) => {
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 });
@@ -194,7 +194,7 @@ router.get('/getIdReu/:idReu', middleware, (req, res) => {
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 });
@@ -230,7 +230,7 @@ router.get('/getIdReuP/:idReu', middleware, (req, res) => {
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 });
@@ -253,14 +253,14 @@ router.post('/post', (req, res) => {
         [data.titulo, data.descripcion, data.id_usuario_sol, null, data.fecha_sol, null, data.hora, data.estado, 'S'],
         (err, result, fields) => {
             if (!err) {
-                console.log(result)
+                // console.log(result)
                 res.json({
                     ok: 1,
                     mensaje: 'Ingreso Correcto',
                     data: data
                 });
             } else {
-                console.log(err)
+                // console.log(err)
                 res.json({
                     ok: 0,
                     mensaje: 'Ha ocurrido un error',
@@ -298,7 +298,7 @@ router.put('/aceptar/:idReu', (req, res) => {
                     mensaje: 'Ha ocurrido un error',
                     data: null
                 });
-                console.log(err)
+                // console.log(err)
             }
         }
 
@@ -327,10 +327,9 @@ router.put('/cancelar/:idReu', (req, res) => {
                     mensaje: 'Ha ocurrido un error',
                     data: null
                 });
-                console.log(err)
+                // console.log(err)
             }
         }
-
     )
 });
 
@@ -338,7 +337,7 @@ router.put('/delete/:idReu', (req, res) => {
 
     const data = req.body;
     const idReu = req.params.idReu;
-    console.log(idReu)
+    // console.log(idReu)
 
     mySqlConnection.query("UPDATE reunion SET \
         activo='N' \
@@ -352,7 +351,7 @@ router.put('/delete/:idReu', (req, res) => {
                     data: data
                 });
             } else {
-                console.log(err)
+                // console.log(err)
                 res.json({
                     ok: 0,
                     mensaje: 'Ha ocurrido un error',

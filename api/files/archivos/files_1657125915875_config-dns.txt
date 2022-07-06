@@ -1,0 +1,69 @@
+
+yum install bind
+
+yum install bind-utils
+
+cd /etc/
+
+vi named.conf
+
+--
+options 
+listen-on por ;192.168.1.39; 20.157.6.184;
+allow-query ;any;
+--
+
+zone "masqaprender.com" IN{
+	type master;
+	file "masqaprender.com.zone";
+};
+
+zone "1.168.192.in-addr.arpa" IN{
+	type master;
+	file "inverso.zone";
+};
+
+cp named.localhost masqaprender.com.zone
+
+$TTL 1D
+@       IN SOA  masqaprender.com. admin.masqaprender.com. (
+                                        0       ; serial
+                                        1D      ; refresh
+                                        1H      ; retry
+                                        1W      ; expire
+                                        3H )    ; minimum
+        IN      NS      masqaprender.com.
+        IN      MX      1 mail.masqaprender.com.
+@       IN      A       192.168.1.12
+mail    IN      A       192.168.1.12
+dns1    IN      A       8.8.8.8
+www     IN      A       192.168.1.12
+backend IN      A       192.168.1.12
+
+
+cp masqaprender.com.zone inverso.zone
+
+$TTL 1D
+@       IN SOA  masqaprender.com. admin.masqaprender.com. (
+                                        0       ; serial
+                                        1D      ; refresh
+                                        1H      ; retry
+                                        1W      ; expire
+                                        3H )    ; minimum
+@       IN      NS      masqaprender.com.
+12      IN      PTR     www.masqaprender.com.
+12      IN      PTR     backend.masqaprender.com.
+
+
+
+chgrp named masqaprender.com.zone
+chgrp named inverso.zone
+
+vi /etc/resolv.conf
+
+systemctl start named
+
+
+
+
+

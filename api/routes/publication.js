@@ -50,7 +50,7 @@ router.get('/getPubId/:idPub', middleware, (req, res) => {
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 });
@@ -82,7 +82,7 @@ router.get('/getPubUser/:idUsu', middleware, (req, res) => {
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 });
@@ -114,7 +114,7 @@ router.get('/getTopPubUser/:idUsu', middleware, (req, res) => {
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 });
@@ -150,7 +150,7 @@ router.get('/getColPubUser/:idUsu', middleware, (req, res) => {
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 });
@@ -183,7 +183,7 @@ router.get('/getPubCom/:idUsu', middleware, (req, res) => {
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 });
@@ -305,7 +305,7 @@ router.post('/post', middleware, (req, res,) => {
                 }
 
             } else {
-                console.log(err)
+                // console.log(err)
                 mySqlConnection.rollback();
                 res.json({
                     ok: 0,

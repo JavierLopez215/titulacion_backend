@@ -23,7 +23,7 @@ router.get('/getLabels', middleware, (req, res) => {
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 });

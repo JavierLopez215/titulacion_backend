@@ -82,7 +82,7 @@ router.get('/getComentario/:idPub', middleware, (req, res) => {
                         mensaje: 'Ha ocurrido un error',
                         data: null
                     });
-                    console.log(err);
+                    // console.log(err);
                 }
             });
         } else {
@@ -91,7 +91,7 @@ router.get('/getComentario/:idPub', middleware, (req, res) => {
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 });
@@ -151,7 +151,7 @@ router.get('/getDetalles/:idCom', middleware, (req, res) => {
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 });
@@ -159,7 +159,7 @@ router.get('/getDetalles/:idCom', middleware, (req, res) => {
 router.get('/getDetallesCom/:idPub', middleware, (req, res) => {
 
     const idPub = parseInt(req.params.idPub);
-    console.log('id', idPub);
+    // console.log('id', idPub);
     mySqlConnection.query("select dc.id, \
     dc.id_comentario, \
     dc.descripcion, \
@@ -181,7 +181,7 @@ router.get('/getDetallesCom/:idPub', middleware, (req, res) => {
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 });

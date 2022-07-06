@@ -27,7 +27,7 @@ router.get('/aporte/:idApo', middleware, (req, res) => {
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 });
@@ -56,7 +56,7 @@ router.get('/comentario/:idCom', middleware, (req, res) => {
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 });
@@ -86,7 +86,7 @@ router.post('/aporte/post', middleware, (req, res) => {
                     mensaje: 'Ha ocurrido un error',
                     data: null
                 });
-                console.log(err)
+                // console.log(err)
             }
         }
 
@@ -202,7 +202,7 @@ router.get('/reunionUsuario/:idUsu', middleware, (req, res) => {
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 });
@@ -239,7 +239,7 @@ router.get('/reunionId/:idRe', middleware, (req, res) => {
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 });
@@ -300,7 +300,7 @@ router.put('/update/reunion/:idCal', middleware, (req, res) => {
                     mensaje: 'Ha ocurrido un error',
                     data: null
                 });
-                 console.log(err)
+                //  console.log(err)
             }
         }
 
@@ -340,7 +340,7 @@ router.get('/publicacionUsuIdPub/:idPub', middleware, (req, res) => {
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 });
@@ -373,7 +373,7 @@ router.get('/publicacionId/:idPub', middleware, (req, res) => {
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 });
@@ -432,7 +432,7 @@ router.put('/update/publicacion/:idCal', middleware, (req, res) => {
                     mensaje: 'Ha ocurrido un error',
                     data: null
                 });
-                 console.log(err)
+                //  console.log(err)
             }
         }
 
@@ -473,7 +473,7 @@ router.get('/comentarioUsuIdCom/:idCom', middleware, (req, res) => {
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 });
@@ -506,7 +506,7 @@ router.get('/comentarioId/:id', middleware, (req, res) => {
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 });
@@ -563,7 +563,7 @@ router.put('/update/comentario/:idCal', middleware, (req, res) => {
                     mensaje: 'Ha ocurrido un error',
                     data: null
                 });
-                 console.log(err)
+                //  console.log(err)
             }
         }
 

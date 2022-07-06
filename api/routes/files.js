@@ -54,13 +54,13 @@ router.get('/aporteUsu/:idUsu', middleware, (req, res) => {
                         data: { 'aportes': rows, 'etiquetas': rows2 }
                     });
                 } else {
-                    console.log(err2);
+                    // console.log(err2);
                     res.json({
                         ok: 0,
                         mensaje: 'Ha ocurrido un error',
                         data: null
                     });
-                    console.log(err);
+                    // console.log(err);
                 }
             });
 
@@ -70,7 +70,7 @@ router.get('/aporteUsu/:idUsu', middleware, (req, res) => {
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 
@@ -114,13 +114,13 @@ router.get('/aporteCom/:idUsu', middleware, (req, res) => {
                         data: { 'aportes': rows, 'etiquetas': rows2 }
                     });
                 } else {
-                    console.log(err2);
+                    // console.log(err2);
                     res.json({
                         ok: 0,
                         mensaje: 'Ha ocurrido un error',
                         data: null
                     });
-                    console.log(err);
+                    // console.log(err);
                 }
             });
         } else {
@@ -129,7 +129,7 @@ router.get('/aporteCom/:idUsu', middleware, (req, res) => {
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 
@@ -152,13 +152,13 @@ router.get('/etiquetasApoUsu/:idUsu', middleware, (req, res) => {
                 data: rows2
             });
         } else {
-            console.log(err2);
+            // console.log(err2);
             res.json({
                 ok: 0,
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 
@@ -181,13 +181,13 @@ router.get('/etiquetasApoCom/:idUsu', middleware, (req, res) => {
                 data: rows2
             });
         } else {
-            console.log(err2);
+            // console.log(err2);
             res.json({
                 ok: 0,
                 mensaje: 'Ha ocurrido un error',
                 data: null
             });
-            console.log(err);
+            // console.log(err);
         }
     });
 
@@ -265,7 +265,7 @@ router.post('/post', middleware, (req, res) => {
                     mensaje: 'Ha ocurrido un error',
                     data: null
                 });
-                console.log(err)
+                // console.log(err)
             }
         }
 
