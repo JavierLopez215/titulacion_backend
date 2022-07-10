@@ -25,7 +25,7 @@ var storage = multer.diskStorage({
 
 var upload = multer({ storage: storage })
 
-//Seleccionar datos por id de Usuario
+// Seleccionar datos por id de Usuario
 router.get('/userId/:id', (req, res) => {
     const id = req.params.id;
     // console.log(id);
@@ -38,22 +38,97 @@ router.get('/userId/:id', (req, res) => {
     });
 });
 
+router.post('/register', (req, res) => {
+    const data = req.body;
+    const pass = bcrypt.hashSync(data.contrasena, 10)
+
+    mySqlConnection.query("Insert into usuario (nombre, apellido, direccion, telefono, \
+        perfil_prof, correo, contraseña, tipo, activo) \
+        VALUES (?,?,?,?,?,?,?,?,?)",
+        [data.nombre, data.apellido, data.direccion,
+        data.telefono, data.perfil_prof, data.correo,
+            pass, 2, 'S'],
+        (err, result, fields) => {
+            if (!err) {
+                user.id = result.insertId;
+                let user_ = JSON.stringify(user);
+                const token = jwt.sign(user_, config.SECRET_PASS);
+                res.json({
+                    ok: 1,
+                    mensaje: 'Registro Correcto',
+                    data: user,
+                    token: token
+                });
+            } else {
+                res.json({
+                    ok: 0,
+                    mensaje: 'Ha ocurrido un error',
+                    data: null,
+                    token: null
+                });
+            }
+        }
+
+    )
+});
+
+//Inicio de sesion de usuarios
+router.post('/login', (req, res) => {
+
+    const { correo, contrasena } = req.body;
+
+    mySqlConnection.query("SELECT id, nombre, apellido, direccion, telefono, perfil_prof, correo,tipo, \
+                            foto, contraseña, activo FROM usuario where correo=? and activo='S'",
+        [correo],
+        (err, data, fields) => {
+            if (!err) {
+                //console.log(rows);
+                if (data.length > 0) {
+                    if (bcrypt.compareSync(contrasena, data[0].contraseña)) {
+                        let user = JSON.stringify(data[0]);
+                        const token = jwt.sign(user, config.SECRET_PASS);
+                        res.json({
+                            ok: 1,
+                            mensaje: 'Usuario Correcto',
+                            data: user,
+                            token: token
+                        });
+                    }
+                    else {
+                        res.json({
+                            ok: 0,
+                            mensaje: 'Usuario o contraseña incorrecta',
+                            data: null,
+                            token: null
+                        });
+                    }
+
+                } else {
+                    res.json({
+                        ok: 0,
+                        mensaje: 'Usuario o contraseña incorrecta',
+                        data: null,
+                        token: null
+                    });
+                }
+            } else {
+                res.json({
+                    ok: 0,
+                    mensaje: 'Ha ocurrido un error',
+                    data: null,
+                    token: null
+                });
+            }
+        })
+});
+
+
 //Actualizar datos personales
 router.post('/update', middleware, (req, res) => {
     const data = req.body;
     const id = req.params.id;
     const old_user = req.data;
 
-    // console.log(data)
-
-    // const user = {
-    //     nombre: data.nombre,
-    //     apellido: data.apellido,
-    //     direccion: data.direccion,
-    //     correo: data.correo,
-    //     telefono: data.telefono,
-    //     perfil_prof: data.perfil_prof
-    // }
     mySqlConnection.query("UPDATE usuario SET nombre = ?, apellido = ?, \
         direccion = ?, \
         telefono = ?, \
@@ -79,14 +154,13 @@ router.post('/update', middleware, (req, res) => {
                 });
             } else {
                 res.json({
-                    ok: 0,
+                    ok: 0, 
                     mensaje: 'Ha ocurrido un error',
                     data: null,
                     token: null
                 });
             }
         }
-
     )
 });
 
@@ -134,226 +208,88 @@ router.post('/updatePicture', [upload.single('file'), middleware], (req, res) =>
     )
 });
 
-router.post('/updateContrasenia', middleware, (req, res) => {
+// router.post('/updateContrasenia', middleware, (req, res) => {
 
 
-    const data = req.body;
-    const id = req.params.id;
-    const old_user = req.data;
+//     const data = req.body;
+//     const id = req.params.id;
+//     const old_user = req.data;
+//     const actual_cont = data.actual_cont;
+//     const nueva_cont = data.nueva_cont;
 
-    const actual_cont = data.actual_cont;
-    const nueva_cont = data.nueva_cont;
+//     mySqlConnection.query("SELECT id, \
+//                                 nombre, \
+//                                 apellido, \
+//                                 direccion, \
+//                                 telefono, \
+//                                 perfil_prof, \
+//                                 correo,tipo, foto, contraseña,\
+//                                 activo FROM usuario \
+//                                 where id=? \
+//                                 and activo='S'",
+//         [old_user.id],
+//         (err, data, fields) => {
+//             if (!err) {
+//                 if (data.length > 0) {
+//                     if (bcrypt.compareSync(actual_cont, data[0].contraseña)) {
 
-    mySqlConnection.query("SELECT id, \
-                                nombre, \
-                                apellido, \
-                                direccion, \
-                                telefono, \
-                                perfil_prof, \
-                                correo,tipo, foto, contraseña,\
-                                activo FROM usuario \
-                                where id=? \
-                                and activo='S'",
-        [old_user.id],
-        (err, data, fields) => {
-            if (!err) {
-                if (data.length > 0) {
-                    if (bcrypt.compareSync(actual_cont, data[0].contraseña)) {
-                        // let user = JSON.stringify(data[0]);
-                        // const token = jwt.sign(user, config.SECRET_PASS);
-                        // res.json({
-                        //     ok: 1,
-                        //     mensaje: 'Usuario Correcto',
-                        //     data: user,
-                        //     token: token
-                        // });
+//                         const pass = bcrypt.hashSync(nueva_cont, 10)
 
-                        const pass = bcrypt.hashSync(nueva_cont, 10)
+//                         mySqlConnection.query("UPDATE usuario SET contraseña = ? where id = ?",
+//                             [pass, old_user.id],
+//                             (err, result, fields) => {
+//                                 if (!err) {
 
-                        mySqlConnection.query("UPDATE usuario SET contraseña = ? where id = ?",
-                            [pass, old_user.id],
-                            (err, result, fields) => {
-                                if (!err) {
-                                    // if (old_user.foto == 'profile.png') {
-                                    //     try {
-                                    //         fs.unlinkSync(`api/files/images/profile/${old_user.foto}`)
-                                    //         // console.log('File removed')
-                                    //     } catch (err) {
-                                    //         console.error('ha ocurrido un error')
-                                    //     }
-                                    // }
+//                                     old_user.contraseña = pass;
+//                                     let user_ = JSON.stringify(old_user);
+//                                     const token = jwt.sign(user_, config.SECRET_PASS);
 
-                                    old_user.contraseña = pass;
-                                    let user_ = JSON.stringify(old_user);
-                                    const token = jwt.sign(user_, config.SECRET_PASS);
-
-                                    res.json({
-                                        ok: 1,
-                                        mensaje: 'Actualizado Correctamente',
-                                        data: old_user,
-                                        token: token
-                                    });
-                                } else {
-                                    res.json({
-                                        ok: 0,
-                                        mensaje: 'Ha ocurrido un error',
-                                        data: null,
-                                        token: null
-                                    });
-                                }
-                            }
-
-                        )
-
-
-                    }
-                    else {
-                        res.json({
-                            ok: 0,
-                            mensaje: 'La contraseña actual ingresada es incorrecta',
-                            data: null,
-                            token: null
-                        });
-                    }
-
-                } else {
-                    res.json({
-                        ok: 0,
-                        mensaje: 'No se encontró un usuario',
-                        data: null,
-                        token: null
-                    });
-                }
-            } else {
-                res.json({
-                    ok: 0,
-                    mensaje: 'Ha ocurrido un error',
-                    data: null,
-                    token: null
-                });
-            }
-        })
-
-
-
-
-
-});
+//                                     res.json({
+//                                         ok: 1,
+//                                         mensaje: 'Actualizado Correctamente',
+//                                         data: old_user,
+//                                         token: token
+//                                     });
+//                                 } else {
+//                                     res.json({
+//                                         ok: 0,
+//                                         mensaje: 'Ha ocurrido un error',
+//                                         data: null,
+//                                         token: null
+//                                     });
+//                                 }
+//                             }
+//                         )
+//                     }
+//                     else {
+//                         res.json({
+//                             ok: 0,
+//                             mensaje: 'La contraseña actual ingresada es incorrecta',
+//                             data: null,
+//                             token: null
+//                         });
+//                     }
+//                 } else {
+//                     res.json({
+//                         ok: 0,
+//                         mensaje: 'No se encontró un usuario',
+//                         data: null,
+//                         token: null
+//                     });
+//                 }
+//             } else {
+//                 res.json({
+//                     ok: 0,
+//                     mensaje: 'Ha ocurrido un error',
+//                     data: null,
+//                     token: null
+//                 });
+//             }
+//         })
+// });
 
 //Registro de nuevos Usuarios
-router.post('/register', (req, res) => {
-    const data = req.body;
-    const pass = bcrypt.hashSync(data.contrasena, 10)
-    const user = {
-        id: 0,
-        nombre: data.nombre,
-        apellido: data.apellido,
-        direccion: data.direccion,
-        telefono: data.telefono,
-        perfil_prof: data.perfil_prof,
-        correo: data.correo,
-        foto: 'profile.png',
-        contraseña: pass,
-        tipo: 2,
-        activo: 'S'
-    }
 
-
-    mySqlConnection.query("Insert into usuario (nombre, apellido, \
-        direccion, \
-        telefono, \
-        perfil_prof, \
-        correo,\
-        contraseña, \
-        tipo, \
-        activo) VALUES (?,?,?,?,?,?,?,?,?)",
-        [data.nombre, data.apellido, data.direccion,
-        data.telefono, data.perfil_prof, data.correo,
-            pass, 2, 'S'],
-        (err, result, fields) => {
-            if (!err) {
-                user.id = result.insertId;
-                let user_ = JSON.stringify(user);
-                const token = jwt.sign(user_, config.SECRET_PASS);
-                res.json({
-                    ok: 1,
-                    mensaje: 'Registro Correcto',
-                    data: user,
-                    token: token
-                });
-            } else {
-                // console.log(err)
-                res.json({
-                    ok: 0,
-                    mensaje: 'Ha ocurrido un error',
-                    data: null,
-                    token: null
-                });
-            }
-        }
-
-    )
-});
-
-//Inicio de sesion de usuarios
-router.post('/login', (req, res) => {
-
-    const { correo, contrasena } = req.body;
-
-    // console.log('contraseña', contrasena)
-
-    mySqlConnection.query("SELECT id, \
-                                nombre, \
-                                apellido, \
-                                direccion, \
-                                telefono, \
-                                perfil_prof, \
-                                correo,tipo, foto, contraseña,\
-                                activo FROM usuario \
-                                where correo=? \
-                                and activo='S'",
-        [correo],
-        (err, data, fields) => {
-            if (!err) {
-                //console.log(rows);
-                if (data.length > 0) {
-                    if (bcrypt.compareSync(contrasena, data[0].contraseña)) {
-                        let user = JSON.stringify(data[0]);
-                        const token = jwt.sign(user, config.SECRET_PASS);
-                        res.json({
-                            ok: 1,
-                            mensaje: 'Usuario Correcto',
-                            data: user,
-                            token: token
-                        });
-                    }
-                    else {
-                        res.json({
-                            ok: 0,
-                            mensaje: 'Usuario o clave incorrecta-contraseña',
-                            data: null,
-                            token: null
-                        });
-                    }
-
-                } else {
-                    res.json({
-                        ok: 0,
-                        mensaje: 'Usuario o clave incorrecta',
-                        data: null,
-                        token: null
-                    });
-                }
-            } else {
-                res.json({
-                    ok: 0,
-                    mensaje: 'Ha ocurrido un error',
-                    data: null,
-                    token: null
-                });
-            }
-        })
-});
 
 router.post('/updateContrasenia', middleware, (req, res) => {
 
@@ -380,14 +316,6 @@ router.post('/updateContrasenia', middleware, (req, res) => {
             if (!err) {
                 if (data.length > 0) {
                     if (bcrypt.compareSync(actual_cont, data[0].contraseña)) {
-                        // let user = JSON.stringify(data[0]);
-                        // const token = jwt.sign(user, config.SECRET_PASS);
-                        // res.json({
-                        //     ok: 1,
-                        //     mensaje: 'Usuario Correcto',
-                        //     data: user,
-                        //     token: token
-                        // });
 
                         const pass = bcrypt.hashSync(nueva_cont, 10)
 
@@ -395,15 +323,6 @@ router.post('/updateContrasenia', middleware, (req, res) => {
                             [pass, old_user.id],
                             (err, result, fields) => {
                                 if (!err) {
-                                    // if (old_user.foto == 'profile.png') {
-                                    //     try {
-                                    //         fs.unlinkSync(`api/files/images/profile/${old_user.foto}`)
-                                    //         // console.log('File removed')
-                                    //     } catch (err) {
-                                    //         console.error('ha ocurrido un error')
-                                    //     }
-                                    // }
-
                                     old_user.contraseña = pass;
                                     let user_ = JSON.stringify(old_user);
                                     const token = jwt.sign(user_, config.SECRET_PASS);
@@ -425,8 +344,6 @@ router.post('/updateContrasenia', middleware, (req, res) => {
                             }
 
                         )
-
-
                     }
                     else {
                         res.json({
@@ -436,7 +353,6 @@ router.post('/updateContrasenia', middleware, (req, res) => {
                             token: null
                         });
                     }
-
                 } else {
                     res.json({
                         ok: 0,
@@ -454,11 +370,6 @@ router.post('/updateContrasenia', middleware, (req, res) => {
                 });
             }
         })
-
-
-
-
-
 });
 
 router.post('/recover', (req, res) => {
@@ -490,15 +401,7 @@ router.post('/recover', (req, res) => {
         (err, data, fields) => {
             if (!err) {
                 if (data.length > 0) {
-                    // if (bcrypt.compareSync(actual_cont, data[0].contraseña)) {
-                    // let user = JSON.stringify(data[0]);
-                    // const token = jwt.sign(user, config.SECRET_PASS);
-                    // res.json({
-                    //     ok: 1,
-                    //     mensaje: 'Usuario Correcto',
-                    //     data: user,
-                    //     token: token
-                    // });
+                    
                     var old_user = data[0];
 
                     for (let numero = 0; numero < 16; numero++) {
@@ -514,14 +417,6 @@ router.post('/recover', (req, res) => {
                         [pass, old_user.id],
                         (err2, result2, fields2) => {
                             if (!err2) {
-                                // if (old_user.foto == 'profile.png') {
-                                //     try {
-                                //         fs.unlinkSync(`api/files/images/profile/${old_user.foto}`)
-                                //         // console.log('File removed')
-                                //     } catch (err) {
-                                //         console.error('ha ocurrido un error')
-                                //     }
-                                // }
 
                                 const transporter = nodeMailer.createTransport({
                                     host: 'smtp.gmail.com',

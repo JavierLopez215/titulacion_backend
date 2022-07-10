@@ -193,7 +193,6 @@ router.get('/etiquetasApoCom/:idUsu', middleware, (req, res) => {
 
 });
 
-
 //Registro de nuevos Aportes
 router.post('/post', middleware, (req, res) => {
     const data = req.body;
@@ -273,7 +272,6 @@ router.post('/post', middleware, (req, res) => {
 });
 
 // cambiar estado a inactivo
-
 router.put('/delete/:idApo', middleware, (req, res) => {
     const idApo = req.params.idApo;
 

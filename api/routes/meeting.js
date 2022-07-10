@@ -236,7 +236,6 @@ router.get('/getIdReuP/:idReu', middleware, (req, res) => {
 });
 
 //Ingresar una nueva reunion
-
 router.post('/post', (req, res) => {
     const data = req.body;
 

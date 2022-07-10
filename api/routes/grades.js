@@ -6,35 +6,35 @@ const mySqlConnection = require('../connection/connection');
 const middleware = require('../middleware/middleware')
 
 //Seleccionar calificaciones de aportes
-router.get('/aporte/:idApo', middleware, (req, res) => {
-    const idApo = parseInt(req.params.idApo);
-    // console.log(id);
-    mySqlConnection.query("select id, \
-    id_aporte, \
-    id_usuario_cal, \
-    calificacion, \
-    motivo_cal \
-    from calificacion_aporte where id_aporte = ?", idApo, (err, rows, fields) => {
-        if (!err) {
-            res.json({
-                ok: 1,
-                mensaje: 'Calificaciones selecionados',
-                data: rows
-            });
-        } else {
-            res.json({
-                ok: 0,
-                mensaje: 'Ha ocurrido un error',
-                data: null
-            });
-            // console.log(err);
-        }
-    });
-});
+// router.get('/aporte/:idApo', middleware, (req, res) => {
+//     const idApo = parseInt(req.params.idApo);
+//     // console.log(id);
+//     mySqlConnection.query("select id, \
+//     id_aporte, \
+//     id_usuario_cal, \
+//     calificacion, \
+//     motivo_cal \
+//     from calificacion_aporte where id_aporte = ?", idApo, (err, rows, fields) => {
+//         if (!err) {
+//             res.json({
+//                 ok: 1,
+//                 mensaje: 'Calificaciones selecionados',
+//                 data: rows
+//             });
+//         } else {
+//             res.json({
+//                 ok: 0,
+//                 mensaje: 'Ha ocurrido un error',
+//                 data: null
+//             });
+//             // console.log(err);
+//         }
+//     });
+// });
 
 
 
-//Seleccionar calificaciones de aportes
+//Seleccionar calificaciones de comentario
 router.get('/comentario/:idCom', middleware, (req, res) => {
     const idCom = parseInt(req.params.idCom);
     // console.log(id);
@@ -63,37 +63,40 @@ router.get('/comentario/:idCom', middleware, (req, res) => {
 
 
 //Registro de nuevas calificaciones de aportes
-router.post('/aporte/post', middleware, (req, res) => {
-    const data = req.body;
+// router.post('/aporte/post', middleware, (req, res) => {
+//     const data = req.body;
 
-    mySqlConnection.query("Insert into calificacion_aporte ( \
-        id_aporte, \
-        id_usuario_cal, \
-        calificacion, \
-        motivo_cal) VALUES (?,?,?,?)",
-        [data.id_aporte, data.id_usuario_cal,
-        data.calificacion, data.motivo_cal],
-        (err, result, fields) => {
-            if (!err) {
-                res.json({
-                    ok: 1,
-                    mensaje: 'Ingreso Correcto',
-                    data: data
-                });
-            } else {
-                res.json({
-                    ok: 0,
-                    mensaje: 'Ha ocurrido un error',
-                    data: null
-                });
-                // console.log(err)
-            }
-        }
+//     mySqlConnection.query("Insert into calificacion_aporte ( \
+//         id_aporte, \
+//         id_usuario_cal, \
+//         calificacion, \
+//         motivo_cal) VALUES (?,?,?,?)",
+//         [data.id_aporte, data.id_usuario_cal,
+//         data.calificacion, data.motivo_cal],
+//         (err, result, fields) => {
+//             if (!err) {
+//                 res.json({
+//                     ok: 1,
+//                     mensaje: 'Ingreso Correcto',
+//                     data: data
+//                 });
+//             } else {
+//                 res.json({
+//                     ok: 0,
+//                     mensaje: 'Ha ocurrido un error',
+//                     data: null
+//                 });
+//                 // console.log(err)
+//             }
+//         }
 
-    )
-});
+//     )
+// });
+
+
 
 //Registro de nuevas calificaciones de comentarios
+
 router.post('/comentario/post', middleware, (req, res) => {
     const data = req.body;
 
@@ -124,28 +127,28 @@ router.post('/comentario/post', middleware, (req, res) => {
 });
 
 //actualizar calificacion de aportes
-router.put('/update/aporte/:idCal', middleware, (req, res) => {
-    const idCal = req.params.idCal;
-    const data = req.body; 
+// router.put('/update/aporte/:idCal', middleware, (req, res) => {
+//     const idCal = req.params.idCal;
+//     const data = req.body; 
 
-    mySqlConnection.query("UPDATE calificacion_aporte SET calificacion = ?, motivo_cal=? where id = ?",
-    [data.calificacion,data.motivo_cal,idCal],(err, result,fields) => {
-            if (!err) {
-                res.json({
-                    ok: 1,
-                    mensaje: 'Calificacion Actualizada',
-                    data: null,
-                });
-            } else {
-                res.json({
-                    ok: 0,
-                    mensaje: 'Ha ocurrido un error',
-                    data: null
-                });
-            }
-        }
-    )
-});
+//     mySqlConnection.query("UPDATE calificacion_aporte SET calificacion = ?, motivo_cal=? where id = ?",
+//     [data.calificacion,data.motivo_cal,idCal],(err, result,fields) => {
+//             if (!err) {
+//                 res.json({
+//                     ok: 1,
+//                     mensaje: 'Calificacion Actualizada',
+//                     data: null,
+//                 });
+//             } else {
+//                 res.json({
+//                     ok: 0,
+//                     mensaje: 'Ha ocurrido un error',
+//                     data: null
+//                 });
+//             }
+//         }
+//     )
+// });
 
 //actualizar calificacion de comentarios.
 router.put('/update/comentario/:idCal', middleware, (req, res) => {

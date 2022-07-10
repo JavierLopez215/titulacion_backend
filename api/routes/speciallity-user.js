@@ -31,7 +31,6 @@ router.get('/get/:idUsu', middleware, (req, res) => {
     });
 });
 
-
 router.post('/post', (req, res) => {
     const data = req.body;
 
