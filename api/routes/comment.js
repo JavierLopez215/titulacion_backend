@@ -212,9 +212,11 @@ router.post('/post', middleware, (req, res) => {
     const detalles = data.listaDetalles;
     let error_ = false;
 
-    mySqlConnection.beginTransaction();
+	mySqlConnection.getConnection(function(err, conn) {
+		if(!err){
+    conn.beginTransaction();
 
-    mySqlConnection.query("Insert into comentario ( \
+    conn.query("Insert into comentario ( \
             id_publicacion_com, \
             id_usu_comenta, \
             comentario, \
@@ -226,7 +228,7 @@ router.post('/post', middleware, (req, res) => {
 
                 if (detalles.length > 0) {
 
-                    mySqlConnection.query("Insert into detalle_comentario ( \
+                   conn.query("Insert into detalle_comentario ( \
                                     id_comentario, \
                                     descripcion, \
                                     contenido, \
@@ -239,7 +241,7 @@ router.post('/post', middleware, (req, res) => {
                         )],
                         (err, result, fields) => {
                             if (err) {
-                                mySqlConnection.rollback();
+                               conn.rollback();
                                 res.json({
                                     ok: 0,
                                     // mensaje: 'Ha ocurrido un error',
@@ -249,7 +251,7 @@ router.post('/post', middleware, (req, res) => {
                                 throw err;
                             }
                             else {
-                                mySqlConnection.commit();
+                                conn.commit();
                                 res.json({
                                     ok: 1,
                                     mensaje: 'Ingreso Correcto',
@@ -261,7 +263,7 @@ router.post('/post', middleware, (req, res) => {
                 }
 
                 else {
-                    mySqlConnection.commit();
+                    conn.commit();
                     res.json({
                         ok: 1,
                         mensaje: 'Ingreso Correcto',
@@ -270,7 +272,7 @@ router.post('/post', middleware, (req, res) => {
                 }
 
             } else {
-                mySqlConnection.rollback();
+                conn.rollback();
                 res.json({
                     ok: 0,
                     // mensaje: 'Ha ocurrido un error',
@@ -278,6 +280,17 @@ router.post('/post', middleware, (req, res) => {
                     data: null
                 });
             }
+
+	})
+		}
+			else{
+			conn.rollback();
+			res.json({
+				ok: 0,
+				mensaje: 'Ha ocurrido un error',
+				data:null
+				})
+			}
         });
     // console.log('end transaction');
 

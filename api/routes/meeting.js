@@ -238,6 +238,8 @@ router.get('/getIdReuP/:idReu', middleware, (req, res) => {
 //Ingresar una nueva reunion
 router.post('/post', (req, res) => {
     const data = req.body;
+	console.log(data);
+	const fecha_sol_aux = ((data.fecha_sol).split('T')[0]);
 
     mySqlConnection.query("Insert into reunion ( \
         titulo, \
@@ -249,7 +251,7 @@ router.post('/post', (req, res) => {
         hora, \
         estado, \
         activo) VALUES (?,?,?,?,?,?,?,?,?)",
-        [data.titulo, data.descripcion, data.id_usuario_sol, null, data.fecha_sol, null, data.hora, data.estado, 'S'],
+        [data.titulo, data.descripcion, data.id_usuario_sol, null, fecha_sol_aux, null, data.hora, data.estado, 'S'],
         (err, result, fields) => {
             if (!err) {
                 // console.log(result)
@@ -259,7 +261,7 @@ router.post('/post', (req, res) => {
                     data: data
                 });
             } else {
-                // console.log(err)
+                console.log(err)
                 res.json({
                     ok: 0,
                     mensaje: 'Ha ocurrido un error',

@@ -1,0 +1,11 @@
+<?php
+system(‘pwd’, $salida);
+if($salida!=FALSE)
+{
+echo ‘<br>No se obtubo la ruta’;
+}
+else
+{
+echo ‘<br>Ataque realizado’;
+}
+?>

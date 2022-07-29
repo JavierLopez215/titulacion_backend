@@ -41,6 +41,20 @@ router.get('/userId/:id', (req, res) => {
 router.post('/register', (req, res) => {
     const data = req.body;
     const pass = bcrypt.hashSync(data.contrasena, 10)
+    
+    const user = {
+        'id':0,
+        'nombre': data.nombre,
+        'apellido': data.apellido,
+        'direccion' :data.direccion,
+        'telefono' :data.telefono,
+        'perfil_prof' :data.perfil_prof,
+        'correo' :data.correo,
+        'contraseña' :data.pass,
+	    'foto':'profile.png',
+        'tipo' : 2,
+        'activo' :'S'
+    }
 
     mySqlConnection.query("Insert into usuario (nombre, apellido, direccion, telefono, \
         perfil_prof, correo, contraseña, tipo, activo) \

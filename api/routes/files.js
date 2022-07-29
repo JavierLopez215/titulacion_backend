@@ -197,16 +197,20 @@ router.get('/etiquetasApoCom/:idUsu', middleware, (req, res) => {
 router.post('/post', middleware, (req, res) => {
     const data = req.body;
     const etiquetas = data.listaEtiquetas;
+	
+//	console.log('registro')
+  mySqlConnection.getConnection(function(er, conn) {
+	  if(!er){
+	conn.beginTransaction();
 
-    mySqlConnection.beginTransaction();
-
-    mySqlConnection.query("Insert into aporte ( \
+    conn.query("Insert into aporte ( \
                             id_usuario_apo, \
-                            descripcion, \
+                            titulo, \
+	    			descripcion, \
                             archivo, \
                             tipo, \
-                            activo) VALUES (?,?,?,?,?)",
-        [data.id_usuario_apo, data.descripcion,
+                            activo) VALUES (?,?,?,?,?,?)",
+        [data.id_usuario_apo, data.titulo, data.descripcion,
         data.archivo, data.tipo, 'S'],
         (err, result, fields) => {
             if (!err) {
@@ -214,7 +218,7 @@ router.post('/post', middleware, (req, res) => {
 
                 if (etiquetas.length > 0) {
 
-                    mySqlConnection.query("Insert into etiqueta_aporte ( \
+                    conn.query("Insert into etiqueta_aporte ( \
                         id_aporte, \
                         id_etiqueta) VALUES ?",
 
@@ -223,9 +227,9 @@ router.post('/post', middleware, (req, res) => {
                         [etiquetas.map(element =>
                             [id_Apo, element.id]
                         )],
-                        (err, result, fields) => {
-                            if (err) {
-                                mySqlConnection.rollback();
+                        (err2, result2, fields) => {
+                            if (err2) {
+                                conn.rollback();
                                 res.json({
                                     ok: 0,
                                     mensaje: 'Ha ocurrido un error',
@@ -234,7 +238,8 @@ router.post('/post', middleware, (req, res) => {
                                 // throw err;
                             }
                             else {
-                                mySqlConnection.commit();
+                               console.log(err2)
+				   conn.commit();
                                 res.json({
                                     ok: 1,
                                     mensaje: 'Ingreso Correcto',
@@ -245,10 +250,11 @@ router.post('/post', middleware, (req, res) => {
                     );
 
                 } else {
-                    mySqlConnection.rollback();
+		console.log('No se ingresaron etiquetas');
+                    conn.rollback();
                     res.json({
                         ok: 0,
-                        mensaje: 'Ha ocurrido un error',
+                        mensaje: 'No se ingresaron etiquetas',
                         data: null
                     });
                 }
@@ -258,17 +264,28 @@ router.post('/post', middleware, (req, res) => {
                 //     data: data
                 // });
             } else {
-                mySqlConnection.rollback();
+                conn.rollback();
                 res.json({
                     ok: 0,
                     mensaje: 'Ha ocurrido un error',
                     data: null
                 });
-                // console.log(err)
+                 console.log(err)
             }
+	});
         }
+	  else{
+	  	conn.rollback();
+		  res.json({
+			ok: 0,
+			  mensaje: 'Ha ocurrido un error',
+			  data: null
+		  })
+	  }
 
-    )
+    
+
+	  })
 });
 
 // cambiar estado a inactivo
