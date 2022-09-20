@@ -1,9 +1,0 @@
-ejemplo de un archivo txt
-
-<blockquote *ngIf="item.tipo == 'code'">
-    <pre>
-        <code class="">
-            {{ item.contenido.trim() }}
-        </code>
-    </pre>
-</blockquote>

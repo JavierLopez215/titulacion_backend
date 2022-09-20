@@ -41,38 +41,65 @@ router.get('/userId/:id', (req, res) => {
 router.post('/register', (req, res) => {
     const data = req.body;
     const pass = bcrypt.hashSync(data.contrasena, 10)
-    
+
     const user = {
-        'id':0,
+        'id': 0,
         'nombre': data.nombre,
         'apellido': data.apellido,
-        'direccion' :data.direccion,
-        'telefono' :data.telefono,
-        'perfil_prof' :data.perfil_prof,
-        'correo' :data.correo,
-        'contraseña' :data.pass,
-	    'foto':'profile.png',
-        'tipo' : 2,
-        'activo' :'S'
+        'direccion': data.direccion,
+        'telefono': data.telefono,
+        'perfil_prof': data.perfil_prof,
+        'correo': data.correo,
+        'contraseña': data.pass,
+        'foto': 'profile.png',
+        'tipo': 2,
+        'activo': 'S'
     }
 
-    mySqlConnection.query("Insert into usuario (nombre, apellido, direccion, telefono, \
-        perfil_prof, correo, contraseña, tipo, activo) \
-        VALUES (?,?,?,?,?,?,?,?,?)",
-        [data.nombre, data.apellido, data.direccion,
-        data.telefono, data.perfil_prof, data.correo,
-            pass, 2, 'S'],
-        (err, result, fields) => {
-            if (!err) {
-                user.id = result.insertId;
-                let user_ = JSON.stringify(user);
-                const token = jwt.sign(user_, config.SECRET_PASS);
-                res.json({
-                    ok: 1,
-                    mensaje: 'Registro Correcto',
-                    data: user,
-                    token: token
-                });
+    mySqlConnection.query("SELECT id, nombre, apellido, direccion, telefono, perfil_prof, correo,tipo, \
+                            foto, contraseña, activo FROM usuario where correo=? and activo='S'",
+        [data.correo],
+        (err_aux, rows_aux, fields) => {
+            if (!err_aux) {
+                //console.log(rows);
+                if (rows_aux.length == 0) {
+
+                    mySqlConnection.query("Insert into usuario (nombre, apellido, direccion, telefono, \
+                            perfil_prof, correo, contraseña, tipo, activo) \
+                            VALUES (?,?,?,?,?,?,?,?,?)",
+                        [data.nombre, data.apellido, data.direccion,
+                        data.telefono, data.perfil_prof, data.correo,
+                            pass, 2, 'S'],
+                        (err, result, fields) => {
+                            if (!err) {
+                                user.id = result.insertId;
+                                let user_ = JSON.stringify(user);
+                                const token = jwt.sign(user_, config.SECRET_PASS);
+                                res.json({
+                                    ok: 1,
+                                    mensaje: 'Registro Correcto',
+                                    data: user,
+                                    token: token
+                                });
+                            } else {
+                                res.json({
+                                    ok: 0,
+                                    mensaje: 'Ha ocurrido un error',
+                                    data: null,
+                                    token: null
+                                });
+                            }
+                        }
+
+                    )
+                } else {
+                    res.json({
+                        ok: 0,
+                        mensaje: 'El correo ingresado ya está registrado',
+                        data: null,
+                        token: null
+                    });
+                }
             } else {
                 res.json({
                     ok: 0,
@@ -81,9 +108,7 @@ router.post('/register', (req, res) => {
                     token: null
                 });
             }
-        }
-
-    )
+        });
 });
 
 //Inicio de sesion de usuarios
@@ -142,40 +167,75 @@ router.post('/update', middleware, (req, res) => {
     const data = req.body;
     const id = req.params.id;
     const old_user = req.data;
+    correo_duplicado = true;
 
-    mySqlConnection.query("UPDATE usuario SET nombre = ?, apellido = ?, \
-        direccion = ?, \
-        telefono = ?, \
-        correo = ?, \
-        perfil_prof = ? where id = ?",
-        [data.nombre, data.apellido, data.direccion,
-        data.telefono, data.correo, data.perfil_prof, old_user.id],
-        (err, result, fields) => {
-            if (!err) {
-                old_user.nombre = data.nombre;
-                old_user.apellido = data.apellido;
-                old_user.direccion = data.direccion;
-                old_user.telefono = data.telefono;
-                old_user.correo = data.correo
-                old_user.perfil_prof = data.perfil_prof;
-                let user_ = JSON.stringify(old_user);
-                const token = jwt.sign(user_, config.SECRET_PASS);
-                res.json({
-                    ok: 1,
-                    mensaje: 'Actualizado Correctamente',
-                    data: old_user,
-                    token: token
-                });
+    mySqlConnection.query("SELECT id, nombre, apellido, direccion, telefono, perfil_prof, correo,tipo, \
+                            foto, contraseña, activo FROM usuario where correo=? and activo='S'",
+        [data.correo],
+        (err_aux, rows_aux, fields) => {
+            if (!err_aux) {
+                //console.log(rows);
+                if (rows_aux.length == 0) {
+                    correo_duplicado = false;
+                } else {
+                    if (rows_aux[0].id == old_user.id) {
+                        correo_duplicado = false
+                    } else {
+                        correo_duplicado = true;
+                    }
+                }
+
+                if (!correo_duplicado) {
+                    mySqlConnection.query("UPDATE usuario SET nombre = ?, apellido = ?, \
+                        direccion = ?, \
+                        telefono = ?, \
+                        correo = ?, \
+                        perfil_prof = ? where id = ?",
+                        [data.nombre, data.apellido, data.direccion,
+                        data.telefono, data.correo, data.perfil_prof, old_user.id],
+                        (err, result, fields) => {
+                            if (!err) {
+                                old_user.nombre = data.nombre;
+                                old_user.apellido = data.apellido;
+                                old_user.direccion = data.direccion;
+                                old_user.telefono = data.telefono;
+                                old_user.correo = data.correo
+                                old_user.perfil_prof = data.perfil_prof;
+                                let user_ = JSON.stringify(old_user);
+                                const token = jwt.sign(user_, config.SECRET_PASS);
+                                res.json({
+                                    ok: 1,
+                                    mensaje: 'Actualizado Correctamente',
+                                    data: old_user,
+                                    token: token
+                                });
+                            } else {
+                                res.json({
+                                    ok: 0,
+                                    mensaje: 'Ha ocurrido un error',
+                                    data: null,
+                                    token: null
+                                });
+                            }
+                        }
+                    )
+                } else {
+                    res.json({
+                        ok: 0,
+                        mensaje: 'El correo ingresado ya está registrado',
+                        data: null,
+                        token: null
+                    });
+                }
             } else {
                 res.json({
-                    ok: 0, 
+                    ok: 0,
                     mensaje: 'Ha ocurrido un error',
                     data: null,
                     token: null
                 });
             }
-        }
-    )
+        });
 });
 
 
@@ -210,6 +270,7 @@ router.post('/updatePicture', [upload.single('file'), middleware], (req, res) =>
                     token: token
                 });
             } else {
+                console.log(err);
                 res.json({
                     ok: 0,
                     mensaje: 'Ha ocurrido un error',
@@ -395,8 +456,8 @@ router.post('/recover', (req, res) => {
         "o", "p", "q", "r", "s", "t", "u", "v", "w", "x",
         "y", "z", "0", "1", "2", "3", "4", "5", "6", "7",
         "8", "9", ".", "*", "$", "&", "#", "@"];
-    
-        var contrasena_temp = '';
+
+    var contrasena_temp = '';
     const correo = req.body.correo;
 
     // mySqlConnection.beginTransaction();
@@ -415,7 +476,7 @@ router.post('/recover', (req, res) => {
         (err, data, fields) => {
             if (!err) {
                 if (data.length > 0) {
-                    
+
                     var old_user = data[0];
 
                     for (let numero = 0; numero < 16; numero++) {
@@ -425,31 +486,33 @@ router.post('/recover', (req, res) => {
 
                     const pass = bcrypt.hashSync(contrasena_temp, 10)
 
-                    mySqlConnection.beginTransaction();
+                    mySqlConnection.getConnection(function (er, conn) {
+                        if (!er) {
+                            conn.beginTransaction();
 
-                    mySqlConnection.query("UPDATE usuario SET contraseña = ? where id = ?",
-                        [pass, old_user.id],
-                        (err2, result2, fields2) => {
-                            if (!err2) {
+                            conn.query("UPDATE usuario SET contraseña = ? where id = ?",
+                                [pass, old_user.id],
+                                (err2, result2, fields2) => {
+                                    if (!err2) {
 
-                                const transporter = nodeMailer.createTransport({
-                                    host: 'smtp.gmail.com',
-                                    port: 465,
-                                    secure: true,
-                                    auth: {
-                                        user: config.email_support,
-                                        pass: config.pass_email_support
-                                    }
-                                });
+                                        const transporter = nodeMailer.createTransport({
+                                            host: 'smtp.gmail.com',
+                                            port: 465,
+                                            secure: true,
+                                            auth: {
+                                                user: config.email_support,
+                                                pass: config.pass_email_support
+                                            }
+                                        });
 
-                                let mailOptions = {
-                                    from: '"Refuerzo Academico App" <' + config.email_support + '>', // sender address
-                                    to: correo, // list of receivers
-                                    subject: 'Recuperar contraseña Refuerzo Academico App', // Subject line
-                                    // text: 'req.body.body', // plain text body
-                                    html: '<div style="margin-bottom: 5px;"> \
+                                        let mailOptions = {
+                                            from: '"Refuerzo Academico App" <' + config.email_support + '>', // sender address
+                                            to: correo, // list of receivers
+                                            subject: 'Recuperar contraseña Refuerzo Academico App', // Subject line
+                                            // text: 'req.body.body', // plain text body
+                                            html: '<div style="margin-bottom: 5px;"> \
                                     <div style="border: 3px solid #2d76e2; width: 500px; margin: 0 auto; border-radius: 10px; padding: 20px;"> \
-                                        <h4 style="text-align: center;">¡Hola '+ old_user.nombre +'!</h4> \
+                                        <h4 style="text-align: center;">¡Hola '+ old_user.nombre + '!</h4> \
                                         <h5 style="text-align: center;">Recuperación de acceso</h5> \
                                         <div style="text-align: center;"> \
                                             <img src="https://e7.pngegg.com/pngimages/78/984/png-clipart-e-commerce-android-business-password-android-blue-logo.png" width="100px" alt="image"> \
@@ -459,52 +522,62 @@ router.post('/recover', (req, res) => {
                                             se adjunta en el mensaje</p> \
                                         <div style="background-color: #2d76e2; color: white; width: auto; margin: 0 auto; text-align: center; padding: 5px; margin: 10px;"> \
                                             <h5 font-size: 20px;>Nueva Contraseña</h5> \
-                                            <h6 font-size: 15px;>'+contrasena_temp+'</h6> \
+                                            <h6 font-size: 15px;>'+ contrasena_temp + '</h6> \
                                         </div> \
                                     </div> \
                                 </div>' // html body
-                                };
+                                        };
 
-                                transporter.sendMail(mailOptions, (error, info) => {
-                                    if (error) {
-                                        // console.log('email error', error)
-                                        mySqlConnection.rollback()
+                                        transporter.sendMail(mailOptions, (error, info) => {
+                                            if (error) {
+                                                // console.log('email error', error)
+                                                conn.rollback()
+                                                res.json({
+                                                    ok: 0,
+                                                    mensaje: 'Ha ocurrido un error',
+                                                    data: null,
+                                                    token: null
+                                                });
+                                            } else {
+                                                old_user.contraseña = contrasena_temp;
+                                                let user_ = JSON.stringify(old_user);
+                                                const token = jwt.sign(user_, config.SECRET_PASS);
+                                                conn.commit();
+
+                                                res.json({
+                                                    ok: 1,
+                                                    mensaje: 'Actualizado Correctamente',
+                                                    data: old_user,
+                                                    token: token
+                                                });
+                                            }
+                                            // console.log('Message %s sent: %s', info.messageId, info.response);
+                                            // res.render('index');
+                                        });
+
+
+                                    } else {
+                                        conn.rollback()
                                         res.json({
                                             ok: 0,
                                             mensaje: 'Ha ocurrido un error',
                                             data: null,
                                             token: null
                                         });
-                                    } else {
-                                        old_user.contraseña = contrasena_temp;
-                                        let user_ = JSON.stringify(old_user);
-                                        const token = jwt.sign(user_, config.SECRET_PASS);
-                                        mySqlConnection.commit();
-
-                                        res.json({
-                                            ok: 1,
-                                            mensaje: 'Actualizado Correctamente',
-                                            data: old_user,
-                                            token: token
-                                        });
                                     }
-                                    // console.log('Message %s sent: %s', info.messageId, info.response);
-                                    // res.render('index');
                                 });
+                        } else {
+                            // console.log(err2)
+                            conn.rollback()
+                            res.json({
+                                ok: 0,
+                                mensaje: 'Ha ocurrido un error',
+                                data: null,
+                                token: null
+                            });
 
-
-                            } else {
-                                // console.log(err2)
-                                mySqlConnection.rollback()
-                                res.json({
-                                    ok: 0,
-                                    mensaje: 'Ha ocurrido un error',
-                                    data: null,
-                                    token: null
-                                });
-
-                            }
                         }
+                    }
 
                     )
 

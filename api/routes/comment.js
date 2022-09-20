@@ -52,6 +52,7 @@ router.get('/getComentario/:idPub', middleware, (req, res) => {
     from comentario co, usuario usu, publicacion p where co.id_publicacion_com = ? \
     and co.id_usu_comenta=usu.id \
     and p.id = co.id_publicacion_com \
+    and p.activo = 'S' \
     and co.activo ='S' ORDER BY id DESC", idPub, (err, rows, fields) => {
 
         if (!err) {
@@ -66,15 +67,18 @@ router.get('/getComentario/:idPub', middleware, (req, res) => {
                 dc.descripcion, \
                 dc.contenido,\
                 dc.tipo \
-                from detalle_comentario dc, comentario c \
+                from detalle_comentario dc, comentario c, publicacion p \
                 where c.id = dc.id_comentario and\
+                p.id = c.id_publicacion_com and \
+                p.activo='S' and \
                 c.id_publicacion_com = ?", idPub, (err2, rows2, fields2) => {
+
 
                 if (!err2) {
                     res.json({
                         ok: 1,
                         mensaje: 'Detalles selecionados',
-                        data: {'comentarios':rows, 'detalles':rows2}
+                        data: { 'comentarios': rows, 'detalles': rows2 }
                     });
                 } else {
                     res.json({
@@ -86,6 +90,7 @@ router.get('/getComentario/:idPub', middleware, (req, res) => {
                 }
             });
         } else {
+            console.log(err)
             res.json({
                 ok: 0,
                 mensaje: 'Ha ocurrido un error',
@@ -188,7 +193,7 @@ router.get('/getDetallesCom/:idPub', middleware, (req, res) => {
 
 
 router.post('/saveFiles', [upload.array('files'), middleware], (req, res, err) => {
-  
+
     if (!req.files) {
         res.json({
             ok: 0,
@@ -212,86 +217,112 @@ router.post('/post', middleware, (req, res) => {
     const detalles = data.listaDetalles;
     let error_ = false;
 
-	mySqlConnection.getConnection(function(err, conn) {
-		if(!err){
-    conn.beginTransaction();
+    mySqlConnection.getConnection(function (err, conn) {
+        if (!err) {
+            conn.beginTransaction();
 
-    conn.query("Insert into comentario ( \
-            id_publicacion_com, \
-            id_usu_comenta, \
-            comentario, \
-            activo) VALUES (?,?,?,?)",
-        [data.id_publicacion_com, data.id_usu_comenta, data.comentario, 'S'],
-        (err, result, fields) => {
-            if (!err) {
-                id_C = result.insertId;
+            conn.query("Select activo FROM publicacion WHERE id =?",
+                [data.id_publicacion_com],
+                (err_aux, rows_aux, fields_aux) => {
+                    if (!err_aux && rows_aux.length > 0) {
 
-                if (detalles.length > 0) {
+                        if (rows_aux[0].activo == 'S') {
 
-                   conn.query("Insert into detalle_comentario ( \
-                                    id_comentario, \
-                                    descripcion, \
-                                    contenido, \
-                                    tipo) VALUES ?",
+                            conn.query("Insert into comentario ( \
+                            id_publicacion_com, \
+                            id_usu_comenta, \
+                            comentario, \
+                            activo) VALUES (?,?,?,?)",
+                                [data.id_publicacion_com, data.id_usu_comenta, data.comentario, 'S'],
+                                (err, result, fields) => {
+                                    if (!err) {
+                                        id_C = result.insertId;
 
-                        // [detalles.map(item => 
-                        //     [id_C, item.descripcion, item.archivo , item.tipo_archivo])],
-                        [detalles.map(element =>
-                            [id_C, element.descripcion, element.contenido, element.tipo]
-                        )],
-                        (err, result, fields) => {
-                            if (err) {
-                               conn.rollback();
-                                res.json({
-                                    ok: 0,
-                                    // mensaje: 'Ha ocurrido un error',
-                                    mensje: err,
-                                    data: null
-                                });
-                                throw err;
-                            }
-                            else {
-                                conn.commit();
-                                res.json({
-                                    ok: 1,
-                                    mensaje: 'Ingreso Correcto',
-                                    data: data
-                                });
-                            }
+                                        if (detalles.length > 0) {
+
+                                            conn.query("Insert into detalle_comentario ( \
+                                                    id_comentario, \
+                                                    descripcion, \
+                                                    contenido, \
+                                                    tipo) VALUES ?",
+
+                                                // [detalles.map(item => 
+                                                //     [id_C, item.descripcion, item.archivo , item.tipo_archivo])],
+                                                [detalles.map(element =>
+                                                    [id_C, element.descripcion, element.contenido, element.tipo]
+                                                )],
+                                                (err, result, fields) => {
+                                                    if (err) {
+                                                        conn.rollback();
+                                                        res.json({
+                                                            ok: 0,
+                                                            mensaje: 'Ha ocurrido un error',
+                                                            //mensje: err,
+                                                            data: null
+                                                        });
+                                                        throw err;
+                                                    }
+                                                    else {
+                                                        conn.commit();
+                                                        res.json({
+                                                            ok: 1,
+                                                            mensaje: 'Ingreso Correcto',
+                                                            data: data
+                                                        });
+                                                    }
+                                                }
+                                            );
+                                        }
+
+                                        else {
+                                            conn.commit();
+                                            res.json({
+                                                ok: 1,
+                                                mensaje: 'Ingreso Correcto',
+                                                data: data
+                                            });
+                                        }
+
+                                    } else {
+                                        conn.rollback();
+                                        res.json({
+                                            ok: 0,
+                                            mensaje: 'Ha ocurrido un error',
+                                            //mensaje: err,
+                                            data: null
+                                        });
+                                    }
+
+                                })
+                        } else {
+                            conn.rollback();
+                            res.json({
+                                ok: 0,
+                                mensaje: 'Publicación no disponible',
+                                data: null
+                            });
                         }
-                    );
-                }
 
-                else {
-                    conn.commit();
-                    res.json({
-                        ok: 1,
-                        mensaje: 'Ingreso Correcto',
-                        data: data
-                    });
-                }
-
-            } else {
-                conn.rollback();
-                res.json({
-                    ok: 0,
-                    // mensaje: 'Ha ocurrido un error',
-                    mensaje: err,
-                    data: null
+                    } else {
+                        conn.rollback();
+                        res.json({
+                            ok: 0,
+                            mensaje: 'Ha ocurrido un error',
+                            data: null
+                        })
+                    }
                 });
-            }
 
-	})
-		}
-			else{
-			conn.rollback();
-			res.json({
-				ok: 0,
-				mensaje: 'Ha ocurrido un error',
-				data:null
-				})
-			}
-        });
+
+        } else {
+            conn.rollback();
+            res.json({
+                ok: 0,
+                mensaje: 'Ha ocurrido un error',
+                data: null
+            })
+        }
+    });
     // console.log('end transaction');
 
 });

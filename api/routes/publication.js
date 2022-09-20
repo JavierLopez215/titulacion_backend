@@ -8,14 +8,14 @@ const middleware = require('../middleware/middleware');
 
 var storage = multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, __dirname+'/../files/archivos')
+        cb(null, __dirname + '/../files/archivos')
     },
     filename: function (req, file, cb) {
-      cb(null, file.fieldname + '_' + Date.now()+"_"+file.originalname)
+        cb(null, file.fieldname + '_' + Date.now() + "_" + file.originalname)
     }
-  })
-   
-  var upload = multer({ storage: storage })
+})
+
+var upload = multer({ storage: storage })
 
 //obtener publicacion por su id
 router.get('/getPubId/:idPub', middleware, (req, res) => {
@@ -169,7 +169,7 @@ router.get('/getPubCom/:idUsu', middleware, (req, res) => {
     id_especialidad, \
     activo, \
     creado \
-    from publicacion where id_usuario_pub <> ? and estado='P' and activo ='S' ORDER BY id DESC", idUsu, (err, rows, fields) => {
+    from publicacion where id_usuario_pub <> ? and activo ='S' ORDER BY id DESC", idUsu, (err, rows, fields) => {
 
         if (!err) {
             res.json({
@@ -219,7 +219,7 @@ router.get('/getDetalles/:idPub', middleware, (req, res) => {
 });
 
 // guardar Archivos
-router.post('/saveFiles', [upload.array('files'),middleware], (req, res,) => {
+router.post('/saveFiles', [upload.array('files'), middleware], (req, res,) => {
     if (!req.files) {
         // const error = new Error('Please choose files')
         // error.httpStatusCode = 400
@@ -229,15 +229,15 @@ router.post('/saveFiles', [upload.array('files'),middleware], (req, res,) => {
             mensaje: 'No se encontraron archivos',
             data: null
         });
-      }
-      else{
+    }
+    else {
         res.json({
             ok: 1,
             mensaje: 'Ingreso Correcto',
             data: req.files
         });
-      }
-    
+    }
+
 });
 
 
@@ -247,90 +247,90 @@ router.post('/post', middleware, (req, res,) => {
     const detalles = data.listaDetalles;
 
     //mySqlConnection.getConnection();
-	mySqlConnection.getConnection(function(err, conn) {
-	if(!err){
-		conn.beginTransaction();
+    mySqlConnection.getConnection(function (err, conn) {
+        if (!err) {
+            conn.beginTransaction();
 
-    conn.query("Insert into publicacion ( \
+            conn.query("Insert into publicacion ( \
             id_usuario_pub, \
             titulo, \
             descripcion, \
             estado, \
             id_especialidad, \
             activo) VALUES (?,?,?,?,?,?)",
-        [data.id_usuario_pub, data.titulo, data.descripcion, data.estado, data.id_especialidad, 'S'],
-        (err, result, fields) => {
-            if (!err) {
-                id_P = result.insertId;
+                [data.id_usuario_pub, data.titulo, data.descripcion, data.estado, data.id_especialidad, 'S'],
+                (err, result, fields) => {
+                    if (!err) {
+                        id_P = result.insertId;
 
-                if (detalles.length > 0) {
+                        if (detalles.length > 0) {
 
-                   conn.query("Insert into detalle_publicacion ( \
+                            conn.query("Insert into detalle_publicacion ( \
                         id_publicacion, \
                         descripcion, \
                         contenido, \
                         tipo) VALUES ?",
 
-                        // [detalles.map(item => 
-                        //     [id_C, item.descripcion, item.archivo , item.tipo_archivo])],
-                        [detalles.map(element =>
-                            [id_P, element.descripcion, element.contenido, element.tipo]
-                        )],
-                        (err, result, fields) => {
-                            if (err) {
-                                conn.rollback();
-                                res.json({
-                                    ok: 0,
-                                    mensaje: err,
-                                    data: null
-                                });
-                                // throw err;
-                            }
-                            else {
-                                conn.commit();
-                                res.json({
-                                    ok: 1,
-                                    mensaje: 'Ingreso Correcto',
-                                    data: data
-                                });
-                            }
+                                // [detalles.map(item => 
+                                //     [id_C, item.descripcion, item.archivo , item.tipo_archivo])],
+                                [detalles.map(element =>
+                                    [id_P, element.descripcion, element.contenido, element.tipo]
+                                )],
+                                (err, result, fields) => {
+                                    if (err) {
+                                        conn.rollback();
+                                        res.json({
+                                            ok: 0,
+                                            mensaje: 'Ha ocurrido un error',
+                                            data: null
+                                        });
+                                        // throw err;
+                                    }
+                                    else {
+                                        conn.commit();
+                                        res.json({
+                                            ok: 1,
+                                            mensaje: 'Ingreso Correcto',
+                                            data: data
+                                        });
+                                    }
+                                }
+                            );
                         }
-                    );
-                }
 
-                else {
-                    conn.commit();
-                    res.json({
-                        ok: 1,
-                        mensaje: 'Ingreso Correcto',
-                        data: data
-                    });
-                }
+                        else {
+                            conn.commit();
+                            res.json({
+                                ok: 1,
+                                mensaje: 'Ingreso Correcto',
+                                data: data
+                            });
+                        }
 
-            } else {
-                // console.log(err)
-                conn.rollback();
-                res.json({
-                    ok: 0,
-                    mensaje: 'Ha ocurrido un error',
-                    data: null
+                    } else {
+                        // console.log(err)
+                        conn.rollback();
+                        res.json({
+                            ok: 0,
+                            mensaje: 'Ha ocurrido un error',
+                            data: null
+                        });
+                    }
                 });
-            }
-        });
-    // console.log('end transaction');
+            // console.log('end transaction');
 
 
-	}
-		else{
-			conn.rollback();
-			res.json({
-				ok: 0,
-				mensaje: 'Ha ocurrido un error',
-				data: null
-			});
-		}
+        }
+        else {
+            conn.rollback();
+            res.json({
+                ok: 0,
+                mensaje: 'Ha ocurrido un error',
+                data: null
+            });
+        }
 
-	});
+    });
 
 });
 
@@ -338,13 +338,38 @@ router.post('/post', middleware, (req, res,) => {
 router.put('/delete/:idPub', middleware, (req, res) => {
     const idPub = req.params.idPub;
 
-    mySqlConnection.query("UPDATE publicacion SET activo = 'N' where id = ?",idPub,(err, result,fields) => {
-            if (!err) {
-                res.json({
-                    ok: 1,
-                    mensaje: 'Publicación Eliminada',
-                    data: null,
-                });
+    mySqlConnection.query("Select activo, estado FROM publicacion WHERE id =?",
+        [idPub],
+        (err_aux, rows_aux, fields_aux) => {
+
+            if (!err_aux && rows_aux.length > 0) {
+                if (rows_aux[0].activo == 'S' && rows_aux[0].estado == 'P') {
+
+
+                    mySqlConnection.query("UPDATE publicacion SET activo = 'N' where id = ?", idPub, (err, result, fields) => {
+                        if (!err) {
+                            res.json({
+                                ok: 1,
+                                mensaje: 'Publicación Eliminada',
+                                data: null,
+                            });
+                        } else {
+                            res.json({
+                                ok: 0,
+                                mensaje: 'Ha ocurrido un error',
+                                data: null
+                            });
+                        }
+                    }
+                    )
+
+                } else {
+                    res.json({
+                        ok: 0,
+                        mensaje: 'Publicación no disponible',
+                        data: null
+                    });
+                }
             } else {
                 res.json({
                     ok: 0,
@@ -352,20 +377,44 @@ router.put('/delete/:idPub', middleware, (req, res) => {
                     data: null
                 });
             }
-        }
-    )
+        });
 });
 
+//completar Publicación
 router.put('/comPublicacion/:idPub', middleware, (req, res) => {
     const idPub = req.params.idPub;
 
-    mySqlConnection.query("UPDATE publicacion SET estado = 'C' where id = ?",idPub,(err, result,fields) => {
-            if (!err) {
-                res.json({
-                    ok: 1,
-                    mensaje: 'Publicación Eliminada',
-                    data: null,
-                });
+    mySqlConnection.query("Select activo, estado FROM publicacion WHERE id =?",
+        [idPub],
+        (err_aux, rows_aux, fields_aux) => {
+
+            if (!err_aux && rows_aux.length > 0) {
+                if (rows_aux[0].activo == 'S' && rows_aux[0].estado == 'P') {
+
+                    mySqlConnection.query("UPDATE publicacion SET estado = 'C' where id = ?", idPub, (err, result, fields) => {
+                        if (!err) {
+                            res.json({
+                                ok: 1,
+                                mensaje: 'Publicación Eliminada',
+                                data: null,
+                            });
+                        } else {
+                            res.json({
+                                ok: 0,
+                                mensaje: 'Ha ocurrido un error',
+                                data: null
+                            });
+                        }
+                    }
+                    )
+
+                } else {
+                    res.json({
+                        ok: 0,
+                        mensaje: 'Publicación no disponible',
+                        data: null
+                    });
+                }
             } else {
                 res.json({
                     ok: 0,
@@ -373,8 +422,7 @@ router.put('/comPublicacion/:idPub', middleware, (req, res) => {
                     data: null
                 });
             }
-        }
-    )
+        });
 });
 
 //Editar publicacion
@@ -383,7 +431,7 @@ router.put('/update/:idPub', middleware, (req, res) => {
     const idPub = req.params.idPub;
 
     mySqlConnection.query("UPDATE publicacion SET titulo = ?, descripcion=?, id_especialidad = ? where id = ?",
-    [data.titulo,data.descripcion,data.id_especialidad,idPub],(err, result,fields) => {
+        [data.titulo, data.descripcion, data.id_especialidad, idPub], (err, result, fields) => {
             if (!err) {
                 res.json({
                     ok: 1,

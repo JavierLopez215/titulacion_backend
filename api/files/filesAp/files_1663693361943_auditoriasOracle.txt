@@ -1,0 +1,55 @@
+
+show parameter audit;
+
+alter system set audit_sys_operations=true SCOPE=SPFILE;
+
+shutdown immediate;
+
+startup;
+
+create user LOPEZ identified by LOPEZ1234 AS DEFAULT TABLESPACE LOPEZ_TB;
+grant dba to Javier;
+
+audit session;
+audit session by Javier;
+
+select * from dba_audit_session
+where USERNAME='Javier';
+
+
+create table PRUEBA1 
+(
+ID INT PRIMARY KEY,
+NOMBRE VARCHAR(50)
+);
+
+
+
+**********VER CREACION DE TABLAS*************
+
+select * from dba_priv_audit_OPTS
+where USER_NAME='user';
+
+
+select * from dba_priv_audit_OPTS
+where USER_NAME='user';
+
+
+DESC dba_priv_audit_OPTS;
+
+
+
+SELECT SQLTEXT FROM SYS.AUD$ WHERE USERID='user';
+
+DESC SYS.AUD$;
+
+audit all by user by access;
+
+INSERT INTO PRUEBA VALUES (1,'Marco');
+
+//ACTIVAR EL EXTENDED PARA QUE SE ALMACENE LAS SENTENCIAS EJECUTADAS
+ALTER SYSTEM SET AUDIT_TRAIL=DB, EXTENDED SCOPE=SPFILE;
+
+
+
+crear una tabla con mi apellido id, nombre

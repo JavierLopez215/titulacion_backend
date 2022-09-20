@@ -10,7 +10,7 @@ router.get('/getLabels', middleware, (req, res) => {
     // console.log(id);
     mySqlConnection.query("SELECT id, \
     etiqueta,\
-    creado From etiqueta WHERE activo='S'", (err, rows, fields) => {
+    creado From etiqueta WHERE activo='S' order by etiqueta", (err, rows, fields) => {
         if (!err) {
             res.json({
                 ok: 1,
@@ -18,6 +18,7 @@ router.get('/getLabels', middleware, (req, res) => {
                 data: rows
             });
         } else {
+            console.log(err)
             res.json({
                 ok: 0,
                 mensaje: 'Ha ocurrido un error',

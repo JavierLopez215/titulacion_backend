@@ -36,7 +36,8 @@ router.get('/aporteUsu/:idUsu', middleware, (req, res) => {
     a.activo, \
     a.creado \
     from aporte a, usuario u where a.id_usuario_apo = u.id and\
-    a.id_usuario_apo = ? and a.activo='S'", id, (err, rows, fields) => {
+    a.id_usuario_apo = ? and a.activo='S' \
+    ORDER BY a.creado ASC", id, (err, rows, fields) => {
         if (!err) {
 
             mySqlConnection.query("select e.id, \
@@ -92,7 +93,8 @@ router.get('/aporteCom/:idUsu', middleware, (req, res) => {
     a.activo, \
     a.creado \
     from aporte a, usuario u where a.id_usuario_apo = u.id and\
-    a.id_usuario_apo <> ? and a.activo='S'", id, (err, rows, fields) => {
+    a.id_usuario_apo <> ? and a.activo='S' \
+    ORDER BY a.creado DESC", id, (err, rows, fields) => {
         if (!err) {
             // res.json({
             //     ok: 1,
@@ -106,9 +108,12 @@ router.get('/aporteCom/:idUsu', middleware, (req, res) => {
             e.creado \
             from etiqueta_aporte ea, etiqueta e \
             where ea.id_etiqueta = e.id and \
-            ea.id_aporte IN (Select id from aporte where id_usuario_apo <> ?)", id, (err2, rows2, fields) => {
+            ea.id_aporte IN (Select id from aporte where id_usuario_apo <> ?)"
+            , id, (err2, rows2, fields) => {
                 if (!err2) {
+                    
                     res.json({
+                        
                         ok: 1,
                         mensaje: 'Etiquetas selecionadas',
                         data: { 'aportes': rows, 'etiquetas': rows2 }
@@ -144,7 +149,8 @@ router.get('/etiquetasApoUsu/:idUsu', middleware, (req, res) => {
             e.creado \
             from etiqueta_aporte ea, etiqueta e \
             where ea.id_etiqueta = e.id and \
-            ea.id_aporte IN (Select id from aporte where id_usuario_apo = ?)", id, (err2, rows2, fields) => {
+            ea.id_aporte IN (Select id from aporte where id_usuario_apo = ?)"
+            , id, (err2, rows2, fields) => {
         if (!err2) {
             res.json({
                 ok: 1,
@@ -238,7 +244,7 @@ router.post('/post', middleware, (req, res) => {
                                 // throw err;
                             }
                             else {
-                               console.log(err2)
+                            //    console.log(err2)
 				   conn.commit();
                                 res.json({
                                     ok: 1,
